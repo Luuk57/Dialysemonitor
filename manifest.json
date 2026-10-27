@@ -1,0 +1,8 @@
+{
+  "name": "Dialyse Log Kiosk",
+  "short_name": "DialyseLog",
+  "start_url": "dialyse.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16"
+}
