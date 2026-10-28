@@ -22,7 +22,6 @@
     #dimmer { position: fixed; inset: 0; background: black; pointer-events: none; opacity: 0; z-index: 9999; transition: opacity 0.3s; }
     .tab-pane { display: none; }
     .tab-pane.active { display: flex; }
-    /* LED segment stijl */
     .led-segment { transition: background-color 0.5s ease, box-shadow 0.5s ease; }
   </style>
 </head>
@@ -140,41 +139,86 @@
       </div>
     </div>
 
-    <!-- TAB 3: LED KLOK & TIJD -->
-    <div id="tab-tijd" class="tab-pane flex-col gap-4 w-full max-w-md mx-auto justify-center items-center h-full">
-      <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 flex flex-col items-center text-center shadow-2xl w-full">
-        <h2 class="text-sky-400 font-bold text-base mb-2">⏱️ LED Voortgangsklok</h2>
+    <!-- TAB 3: LED KLOK & DASHBOARD -->
+    <div id="tab-tijd" class="tab-pane flex-col gap-4 w-full max-w-4xl mx-auto justify-center items-center h-full">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 flex flex-col shadow-2xl w-full">
+        <h2 class="text-sky-400 font-bold text-base mb-3 text-center">⏱️ LED Voortgangsklok & Sessie Dashboard</h2>
         
-        <!-- Start & Eindtijd Weergave -->
-        <div class="flex justify-between w-full px-4 mb-2 text-xs font-semibold text-slate-400">
-          <span>Start: <strong id="startTimeDisplay" class="text-sky-400">--:--</strong></span>
-          <span>Eind: <strong id="endTimeDisplay" class="text-emerald-400">--:--</strong></span>
-        </div>
-
-        <!-- Ronde Klok met 12 LED Segmenten als Rand -->
-        <div class="relative w-56 h-56 flex items-center justify-center my-1">
-          <!-- 12 LED Blokjes in een cirkel gepositioneerd -->
-          <div class="absolute inset-0 rounded-full border-4 border-slate-800 flex items-center justify-center pointer-events-none">
-            <!-- LED 01 tot 12 (worden via JS van kleur gewisseld) -->
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="top: 4px; left: 50%; transform: translateX(-50%);" data-led="0"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="top: 12px; right: 40px; transform: rotate(30deg);" data-led="1"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="top: 35px; right: 15px; transform: rotate(60deg);" data-led="2"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="top: 50%; right: 4px; transform: translateY(-50%) rotate(90deg);" data-led="3"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="bottom: 35px; right: 15px; transform: rotate(120deg);" data-led="4"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="bottom: 12px; right: 40px; transform: rotate(150deg);" data-led="5"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="bottom: 4px; left: 50%; transform: translateX(-50%) rotate(180deg);" data-led="6"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="bottom: 12px; left: 40px; transform: rotate(210deg);" data-led="7"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="bottom: 35px; left: 15px; transform: rotate(240deg);" data-led="8"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="top: 50%; left: 4px; transform: translateY(-50%) rotate(270deg);" data-led="9"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="top: 35px; left: 15px; transform: rotate(300deg);" data-led="10"></div>
-            <div class="absolute w-3 h-5 bg-amber-400 rounded-sm led-segment shadow-[0_0_8px_#eab308]" style="top: 12px; left: 40px; transform: rotate(330deg);" data-led="11"></div>
+        <!-- Hoofdgrid: 3 Kolommen (Links, Klok in het midden, Rechts) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          
+          <!-- LINKER VAK: Ingestelde UF, UF/U en Doel UF -->
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 text-xs">
+            <div>
+              <span class="text-slate-400 font-semibold block mb-0.5">Ingestelde UF</span>
+              <div id="panelSetUf" class="text-lg font-extrabold text-sky-400">3800 ml</div>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block mb-0.5">UF / U (Uurlijks)</span>
+              <div id="panelUfPerHour" class="text-lg font-extrabold text-amber-400">475 ml/u</div>
+            </div>
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span class="text-slate-400">Doel UF (0 tot Ingesteld)</span>
+                <span id="targetUfPercent" class="text-emerald-400">0%</span>
+              </div>
+              <div class="w-full bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden">
+                <div id="targetUfBar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
           </div>
 
-          <!-- Centrum Informatie -->
-          <div class="flex flex-col items-center z-10 bg-slate-950/90 p-4 rounded-full w-40 h-40 justify-center border border-slate-800">
-            <div id="countdownTimer" class="text-2xl font-extrabold text-sky-400 tracking-wider">08:00:00</div>
-            <div id="progressPercentage" class="text-[11px] font-bold text-slate-400 mt-0.5">0% verstreken</div>
+          <!-- MIDDELSTE VAK: Klok met LED rand -->
+          <div class="flex flex-col items-center justify-center">
+            <div class="flex justify-between w-full px-2 mb-2 text-xs font-semibold text-slate-400">
+              <span>Start: <strong id="startTimeDisplay" class="text-sky-400">--:--</strong></span>
+              <div class="flex items-center gap-1">
+                <span>Eind:</span>
+                <input type="time" id="endTimeInput" class="bg-slate-950 border border-slate-700 text-emerald-400 rounded px-1 py-0.5 text-xs font-bold outline-none cursor-pointer">
+              </div>
+            </div>
+
+            <!-- Ronde Klok met 12 LED Segmenten -->
+            <div class="relative w-52 h-52 flex items-center justify-center my-1">
+              <div class="absolute inset-0 rounded-full border-4 border-slate-800 flex items-center justify-center pointer-events-none">
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 4px; left: 50%; transform: translateX(-50%);" data-led="0"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 10px; right: 35px; transform: rotate(30deg);" data-led="1"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 30px; right: 12px; transform: rotate(60deg);" data-led="2"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 50%; right: 4px; transform: translateY(-50%) rotate(90deg);" data-led="3"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 30px; right: 12px; transform: rotate(120deg);" data-led="4"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 10px; right: 35px; transform: rotate(150deg);" data-led="5"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 4px; left: 50%; transform: translateX(-50%) rotate(180deg);" data-led="6"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 10px; left: 35px; transform: rotate(210deg);" data-led="7"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 30px; left: 12px; transform: rotate(240deg);" data-led="8"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 50%; left: 4px; transform: translateY(-50%) rotate(270deg);" data-led="9"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 30px; left: 12px; transform: rotate(300deg);" data-led="10"></div>
+                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 10px; left: 40px; transform: rotate(330deg);" data-led="11"></div>
+              </div>
+
+              <!-- Centrum Tijd -->
+              <div class="flex flex-col items-center z-10 bg-slate-950/90 p-3 rounded-full w-36 h-36 justify-center border border-slate-800">
+                <div id="countdownTimer" class="text-xl font-extrabold text-sky-400 tracking-wider">08:00:00</div>
+                <div id="progressPercentage" class="text-[10px] font-bold text-slate-400 mt-0.5">0% verstreken</div>
+              </div>
+            </div>
           </div>
+
+          <!-- RECHTER VAK: Bloeddruk, Behandeling % en Patiëntnaam -->
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 text-xs">
+            <div>
+              <span class="text-slate-400 font-semibold block mb-0.5">Laatst Gemeten Bloeddruk</span>
+              <div id="panelBp" class="text-lg font-extrabold text-rose-400">120 / 80 mmHg</div>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block mb-0.5">Behandeling Voortgang</span>
+              <div id="panelTreatmentPercent" class="text-lg font-extrabold text-sky-400">0%</div>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block mb-0.5">Patiënt Naam</span>
+              <div class="text-base font-extrabold text-emerald-400 truncate">Thuisdialyse Patiënt</div>
+            </div>
+          </div>
+
         </div>
 
         <!-- Timer Bedieningsknoppen -->
@@ -346,8 +390,38 @@
     const setUfInput = document.getElementById('setUfInput');
     const actualUfDisplay = document.getElementById('actualUfDisplay');
 
+    // Dashboard elementen linkerkant
+    const panelSetUf = document.getElementById('panelSetUf');
+    const panelUfPerHour = document.getElementById('panelUfPerHour');
+    const targetUfPercent = document.getElementById('targetUfPercent');
+    const targetUfBar = document.getElementById('targetUfBar');
+    
+    // Dashboard elementen rechterkant
+    const panelBp = document.getElementById('panelBp');
+    const panelTreatmentPercent = document.getElementById('panelTreatmentPercent');
+    const bloeddrukInput = document.getElementById('bloeddrukInput');
+
     let userModifiedSetUf = false;
-    setUfInput.oninput = () => { userModifiedSetUf = true; };
+    setUfInput.oninput = () => { 
+      userModifiedSetUf = true; 
+      updateDashboardValues();
+      sessionRef.update({ setUf: setUfInput.value });
+    };
+
+    bloeddrukInput.oninput = () => {
+      panelBp.innerText = bloeddrukInput.value ? bloeddrukInput.value + ' mmHg' : '-- / --';
+      sessionRef.update({ bp: bloeddrukInput.value });
+    };
+
+    function updateDashboardValues() {
+      const setUfVal = parseFloat(setUfInput.value) || 3800;
+      panelSetUf.innerText = setUfVal + ' ml';
+
+      // UF per uur (uitgaande van totale tijd in uren, bijv. timeLeft / 3600 of standaard 8 uur)
+      const hoursLeft = Math.max(timeLeft / 3600, 0.1);
+      const ufPerHour = Math.round(setUfVal / 8); // Gemiddeld over 8 uur
+      panelUfPerHour.innerText = ufPerHour + ' ml/u';
+    }
 
     function berekenUF(syncToFirebase = true) {
       const dry = parseFloat(dryWeightInput.value) || 109.0;
@@ -366,6 +440,7 @@
       if (!userModifiedSetUf) {
         setUfInput.value = ufMl;
       }
+      updateDashboardValues();
 
       const ufKgNum = parseFloat(ufKg.toFixed(1));
       if (ufKgNum >= 4.5) {
@@ -507,13 +582,14 @@
     let timeLeft = TOTAL_TIME;
     let isRunning = false;
     let startTimeEpoch = null;
+    let customEndTimeStr = "";
 
     const timerDisplay = document.getElementById('countdownTimer');
     const topCountdown = document.getElementById('topCountdown');
     const overviewTime = document.getElementById('overviewTime');
     const progressPercentage = document.getElementById('progressPercentage');
     const startTimeDisplay = document.getElementById('startTimeDisplay');
-    const endTimeDisplay = document.getElementById('endTimeDisplay');
+    const endTimeInput = document.getElementById('endTimeInput');
     const ledSegments = document.querySelectorAll('.led-segment');
 
     function updateTimerDisplay() {
@@ -532,33 +608,62 @@
       const percent = Math.round(progress * 100);
 
       progressPercentage.innerText = percent + '% verstreken';
+      panelTreatmentPercent.innerText = percent + '%';
 
-      // Start- en Eindtijd tonen
+      // Doel UF Voortgangsbalk (0 tot ingestelde UF)
+      targetUfPercent.innerText = percent + '%';
+      targetUfBar.style.width = percent + '%';
+
+      // Start- en Eindtijd berekening
       if (startTimeEpoch) {
         const startD = new Date(startTimeEpoch);
         startTimeDisplay.innerText = startD.toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'});
 
-        const endD = new Date(startTimeEpoch + (TOTAL_TIME * 1000));
-        endTimeDisplay.innerText = endD.toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'});
+        if (!customEndTimeStr) {
+          const endD = new Date(startTimeEpoch + (TOTAL_TIME * 1000));
+          const hh = String(endD.getHours()).padStart(2, '0');
+          const mm = String(endD.getMinutes()).padStart(2, '0');
+          customEndTimeStr = `${hh}:${mm}`;
+          endTimeInput.value = customEndTimeStr;
+        }
       } else {
         startTimeDisplay.innerText = '--:--';
-        endTimeDisplay.innerText = '--:--';
       }
 
       // LED Ring aansturen (12 segmenten)
       const activeLeds = Math.round(progress * ledSegments.length);
       ledSegments.forEach((led, index) => {
         if (index < activeLeds) {
-          // Verstreken LED's worden groen
           led.style.backgroundColor = '#10b981';
-          led.style.boxShadow = '0 0 10px #10b981';
+          led.style.boxShadow = '0 0 8px #10b981';
         } else {
-          // Nog te gaan LED's blijven geel
           led.style.backgroundColor = '#eab308';
-          led.style.boxShadow = '0 0 8px #eab308';
+          led.style.boxShadow = '0 0 6px #eab308';
         }
       });
     }
+
+    // Als gebruiker de eindtijd aanpast
+    endTimeInput.onchange = () => {
+      customEndTimeStr = endTimeInput.value;
+      if (startTimeEpoch && customEndTimeStr) {
+        const [h, m] = customEndTimeStr.split(':');
+        const now = new Date(startTimeEpoch);
+        const targetEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(h), parseInt(m));
+        
+        // Als eindtijd voor starttijd ligt, neem volgende dag aan
+        if (targetEnd < now) {
+          targetEnd.setDate(targetEnd.getDate() + 1);
+        }
+        
+        const newTotalSec = Math.floor((targetEnd.getTime() - now.getTime()) / 1000);
+        if (newTotalSec > 0) {
+          timeLeft = newTotalSec;
+          updateTimerDisplay();
+          sessionRef.update({ timeLeft: timeLeft, endTimeStr: customEndTimeStr });
+        }
+      }
+    };
 
     setInterval(() => {
       if (isRunning && timeLeft > 0) {
@@ -572,20 +677,22 @@
       if (!startTimeEpoch) {
         startTimeEpoch = Date.now();
       }
-      sessionRef.update({ isRunning: true, timeLeft: timeLeft, startTime: startTimeEpoch });
+      sessionRef.update({ isRunning: true, timeLeft: timeLeft, startTime: startTimeEpoch, endTimeStr: customEndTimeStr });
     };
 
     document.getElementById('pauseTimer').onclick = () => {
       isRunning = false;
-      sessionRef.update({ isRunning: false, timeLeft: timeLeft, startTime: startTimeEpoch });
+      sessionRef.update({ isRunning: false, timeLeft: timeLeft, startTime: startTimeEpoch, endTimeStr: customEndTimeStr });
     };
 
     document.getElementById('resetTimer').onclick = () => {
       isRunning = false;
       timeLeft = TOTAL_TIME;
       startTimeEpoch = null;
+      customEndTimeStr = "";
+      endTimeInput.value = "";
       updateTimerDisplay();
-      sessionRef.update({ isRunning: false, timeLeft: timeLeft, startTime: null });
+      sessionRef.update({ isRunning: false, timeLeft: timeLeft, startTime: null, endTimeStr: "" });
     };
 
     // --- LIVE FIREBASE LUISTERSTROOM ---
@@ -596,10 +703,20 @@
         if (data.preWeight && data.preWeight != preWeightInput.value) { preWeightInput.value = data.preWeight; }
         if (data.postWeight && data.postWeight != postWeightInput.value) { postWeightInput.value = data.postWeight; }
         if (data.setUf && data.setUf != setUfInput.value) { setUfInput.value = data.setUf; userModifiedSetUf = true; }
+        
+        if (data.bp) {
+          bloeddrukInput.value = data.bp;
+          panelBp.innerText = data.bp + ' mmHg';
+        }
+
         berekenUF(false);
 
         if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
         if (data.startTime) { startTimeEpoch = data.startTime; } else { startTimeEpoch = null; }
+        if (data.endTimeStr && data.endTimeStr != customEndTimeStr) {
+          customEndTimeStr = data.endTimeStr;
+          endTimeInput.value = customEndTimeStr;
+        }
         if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
           timeLeft = data.timeLeft;
           updateTimerDisplay();
