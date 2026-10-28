@@ -51,7 +51,7 @@
         <span class="text-xs text-slate-400">⏱️ Restant:</span>
         <span id="topCountdown" class="font-extrabold text-sky-400 text-sm tracking-wider">04:00:00</span>
       </div>
-      <!-- Refresh Knop met automatische Fullscreen herstart -->
+      <!-- Refresh Knop -->
       <button id="refreshBtn" class="bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-xl text-xs font-semibold transition cursor-pointer border border-slate-700" title="Pagina Vernieuwen">🔄</button>
     </div>
     
@@ -340,7 +340,7 @@
       </div>
     </div>
 
-    <!-- TAB 6: OVERZICHT (Met Uitgebreide Tabel & PDF Print Knop) -->
+    <!-- TAB 6: OVERZICHT -->
     <div id="tab-overzicht" class="tab-pane flex-col gap-4 w-full max-w-4xl mx-auto pb-6">
       <div id="printArea" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4 w-full">
         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -364,7 +364,6 @@
           </div>
         </div>
 
-        <!-- Uitgebreide Overzichtstabel -->
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="text-slate-400 border-b border-slate-800">
@@ -523,7 +522,7 @@
       if (document.visibilityState === 'visible') await requestWakeLock();
     });
 
-    // --- FULLSCREEN & REFRESH (Direct automatisch terug naar Fullscreen) ---
+    // --- FULLSCREEN & REFRESH LOGICA (Direct Fullscreen herstel) ---
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     function triggerFullscreen() {
       if (!document.fullscreenElement) {
@@ -536,8 +535,17 @@
       else if (document.exitFullscreen) document.exitFullscreen();
     };
 
+    // Zorg dat de kiosk-modus direct herstelt bij de eerste aanraking of klik na een refresh
+    document.addEventListener('click', () => {
+      if (!document.fullscreenElement && sessionStorage.getItem('wasFullscreen') === 'true') {
+        triggerFullscreen();
+      }
+    }, { once: true });
+
     document.getElementById('refreshBtn').onclick = () => {
-      triggerFullscreen();
+      if (document.fullscreenElement) {
+        sessionStorage.setItem('wasFullscreen', 'true');
+      }
       location.reload();
     };
 
@@ -1017,13 +1025,12 @@
       let weights = [];
 
       if (data) {
-        const keys = Object.keys(data).reverse(); // Laatste bovenaan
+        const keys = Object.keys(data).reverse();
         keys.forEach(key => {
           const item = data[key];
           if (item.pre) weights.push(parseFloat(item.pre));
           if (item.post) weights.push(parseFloat(item.post));
 
-          // Tab 1 tabelrij
           const row = document.createElement('tr');
           row.className = "border-b border-slate-900 hover:bg-slate-900/50";
           row.innerHTML = `
@@ -1040,7 +1047,6 @@
           `;
           historyTableBody.appendChild(row);
 
-          // Overzicht tabblad tabelrij (voor PDF / Print)
           const fullRow = document.createElement('tr');
           fullRow.className = "border-b border-slate-900";
           fullRow.innerHTML = `
@@ -1082,10 +1088,10 @@
       }
     });
 
-    // --- LED KLOK & TIMER ---
+    // --- LED KLOK & TIMER (Met sessie geheugen) ---
     let totalDurationSec = 4 * 3600;
-    let timeLeft = totalDurationSec;
-    let isRunning = false;
+    let timeLeft = sessionStorage.getItem('savedTimeLeft') ? parseInt(sessionStorage.getItem('savedTimeLeft')) : totalDurationSec;
+    let isRunning = sessionStorage.getItem('savedIsRunning') === 'true';
     let startTimeEpoch = null;
     let customStartTimeStr = "08:00";
     let customEndTimeStr = "12:00";
@@ -1149,7 +1155,7 @@
       totalDurationSec = Math.floor((endD.getTime() - startD.getTime()) / 1000);
       if (totalDurationSec <= 0) totalDurationSec = 4 * 3600;
 
-      if (!isRunning && startTimeEpoch === null) {
+      if (!isRunning && startTimeEpoch === null && !sessionStorage.getItem('savedTimeLeft')) {
         timeLeft = totalDurationSec;
       }
       updateDashboardValues();
@@ -1169,12 +1175,15 @@
     setInterval(() => {
       if (isRunning && timeLeft > 0) {
         timeLeft--;
+        sessionStorage.setItem('savedTimeLeft', timeLeft);
+        sessionStorage.setItem('savedIsRunning', isRunning);
         updateTimerDisplay();
       }
     }, 1000);
 
     document.getElementById('startTimer').onclick = () => {
       isRunning = true;
+      sessionStorage.setItem('savedIsRunning', true);
       if (!startTimeEpoch) {
         startTimeEpoch = Date.now();
       }
@@ -1190,12 +1199,15 @@
 
     document.getElementById('pauseTimer').onclick = () => {
       isRunning = false;
+      sessionStorage.setItem('savedIsRunning', false);
       sessionRef.update({ isRunning: false, timeLeft: timeLeft });
     };
 
     document.getElementById('resetTimer').onclick = () => {
       isRunning = false;
       startTimeEpoch = null;
+      sessionStorage.removeItem('savedTimeLeft');
+      sessionStorage.removeItem('savedIsRunning');
       recalculateTimes();
       updateTimerDisplay();
       sessionRef.update({ isRunning: false, timeLeft: totalDurationSec, startTime: null });
@@ -1226,11 +1238,9 @@
 
         berekenUF(false);
 
-        if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
-        if (data.startTime) { startTimeEpoch = data.startTime; } else { startTimeEpoch = null; }
-
-        if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
-          timeLeft = data.timeLeft;
+        if (!sessionStorage.getItem('savedTimeLeft')) {
+          if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
+          if (typeof data.timeLeft === 'number') { timeLeft = data.timeLeft; }
         }
 
         updateDashboardValues();
