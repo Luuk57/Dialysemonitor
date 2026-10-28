@@ -33,7 +33,7 @@
     <div class="flex items-center gap-3">
       <span class="text-xl">🩺</span>
       <h1 class="font-bold tracking-wide text-sky-400">Dialyse Log Kiosk</h1>
-      <span id="syncStatus" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-medium">Verbinden...</span>
+      <span id="syncStatus" class="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-medium">Verbinden...</span>
     </div>
     
     <div class="flex items-center gap-4 text-sm">
@@ -51,7 +51,7 @@
     </div>
   </header>
 
-  <!-- Main Container (2 Kolommen voor 10-inch Tablet) -->
+  <!-- Main Container -->
   <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 overflow-y-auto">
     
     <!-- Kolom 1: Countdown & Sessie -->
@@ -67,21 +67,21 @@
         </div>
       </div>
 
-      <!-- Status & Wake Lock Kaart -->
+      <!-- Status Kaart -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between flex-1">
         <div>
           <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">⚡ Tablet Status</h2>
           <div class="flex items-center justify-between py-2 border-b border-slate-800 text-sm">
             <span>Wake Lock (Scherm aan):</span>
-            <span id="wakelockStatus" class="font-bold text-emerald-400">Actief 🟢</span>
+            <span id="wakelockStatus" class="font-bold text-emerald-400">Controleren...</span>
           </div>
           <div class="flex items-center justify-between py-2 text-sm">
             <span>Live Sync (Firebase):</span>
-            <span id="firebaseStatus" class="font-bold text-emerald-400">Verbonden ⚡</span>
+            <span id="firebaseStatusText" class="font-bold text-amber-400">Verbinden...</span>
           </div>
         </div>
         <div class="text-xs text-slate-500 mt-4 text-center">
-          Ontworpen voor ononderbroken nachtdialyse op Lenovo tablets.
+          Ontworpen voor ononderbroken nachtdialyse op Lenovo M10 & P12 tablets.
         </div>
       </div>
     </div>
@@ -105,7 +105,7 @@
       <div id="ufResultCard" class="mt-auto p-5 rounded-2xl border transition-all text-center bg-emerald-500/10 border-emerald-500/30">
         <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Berekend UF Advies</div>
         <div id="ufValue" class="text-4xl font-extrabold text-emerald-400 mb-2">3.8 kg</div>
-        <div id="ufTrafficLabel" class="text-sm font-bold text-emerald-300">Normaal / Goed (< 4.0 kg)</div>
+        <div id="ufTrafficLabel" class="text-sm font-bold text-emerald-300">Normaal / Goed (&lt; 4.0 kg)</div>
       </div>
     </div>
 
@@ -124,7 +124,7 @@
   </div>
 
   <script>
-    // --- FIREBASE CONFIGURATIE (Eerder opgehaald) ---
+    // --- FIREBASE CONFIGURATIE ---
     const firebaseConfig = {
       apiKey: "AIzaSyDOj-x4BV4J1rkZ21R29D5KknkTaswWvw",
       authDomain: "tabos-vocht.firebaseapp.com",
@@ -139,27 +139,48 @@
     const db = firebase.database();
     const sessionRef = db.ref('dialyse_actieve_sessie');
 
-    // --- WAKE LOCK API (Voorkomt dat tablet in standby springt) ---
+    const syncStatusEl = document.getElementById('syncStatus');
+    const firebaseStatusTextEl = document.getElementById('firebaseStatusText');
+
+    // Luister naar Firebase verbindingsstatus
+    db.ref('.info/connected').on('value', (snap) => {
+      if (snap.val() === true) {
+        syncStatusEl.className = "text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-medium";
+        syncStatusEl.innerText = "Live Synced ⚡";
+        firebaseStatusTextEl.className = "font-bold text-emerald-400";
+        firebaseStatusTextEl.innerText = "Verbonden ⚡";
+      } else {
+        syncStatusEl.className = "text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-medium";
+        syncStatusEl.innerText = "Verbinden...";
+        firebaseStatusTextEl.className = "font-bold text-amber-400";
+        firebaseStatusTextEl.innerText = "Verbinden...";
+      }
+    });
+
+    // --- WAKE LOCK API ---
     let wakeLock = null;
     async function requestWakeLock() {
       if ('wakeLock' in navigator) {
         try {
           wakeLock = await navigator.wakeLock.request('screen');
+          document.getElementById('wakelockStatus').className = "font-bold text-emerald-400";
           document.getElementById('wakelockStatus').innerText = "Actief 🟢";
           wakeLock.addEventListener('release', () => {
+            document.getElementById('wakelockStatus').className = "font-bold text-amber-400";
             document.getElementById('wakelockStatus').innerText = "Inactief 🟡";
           });
         } catch (err) {
-          document.getElementById('wakelockStatus').innerText = "Niet beschikbaar 🔴";
+          document.getElementById('wakelockStatus').className = "font-bold text-rose-400";
+          document.getElementById('wakelockStatus').innerText = "Fout / Niet toegestaan 🔴";
         }
       } else {
+        document.getElementById('wakelockStatus').className = "font-bold text-slate-400";
         document.getElementById('wakelockStatus').innerText = "Niet ondersteund ❌";
       }
     }
     requestWakeLock();
-    // Vang af wanneer de pagina weer zichtbaar wordt na minimaliseren
     document.addEventListener('visibilitychange', async () => {
-      if (wakeLock !== null && document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible') {
         await requestWakeLock();
       }
     });
@@ -176,8 +197,7 @@
     // --- HELDERHEID / DIMMER ---
     const dimmer = document.getElementById('dimmer');
     document.getElementById('brightnessRange').oninput = (e) => {
-      const val = e.target.value;
-      dimmer.style.opacity = val / 100;
+      dimmer.style.opacity = e.target.value / 100;
     };
 
     // --- KIOSK SLOT & PIN ---
@@ -199,7 +219,7 @@
     };
     document.getElementById('pinCancel').onclick = () => pinModal.style.display = 'none';
 
-    // --- GEWICHT & UF BEREKENING + TRAFFIC LIGHTS ---
+    // --- GEWICHT & UF BEREKENING ---
     const preWeightInput = document.getElementById('preWeight');
     const dryWeightInput = document.getElementById('dryWeight');
     const ufValueEl = document.getElementById('ufValue');
@@ -210,13 +230,11 @@
       const pre = parseFloat(preWeightInput.value) || 0;
       const dry = parseFloat(dryWeightInput.value) || 109.0;
       
-      // Formule: pre weight - dry weight + 0.3
       const uf = (pre - dry + 0.3).toFixed(1);
       const ufNum = parseFloat(uf);
 
       ufValueEl.innerText = uf + ' kg';
 
-      // Traffic Light Kleurcodering: >= 4.5 rood, >= 4.0 oranje, < 4.0 groen
       ufResultCard.className = "mt-auto p-5 rounded-2xl border transition-all text-center ";
       if (ufNum >= 4.5) {
         ufResultCard.classList.add('bg-rose-500/10', 'border-rose-500/30');
@@ -243,7 +261,7 @@
     preWeightInput.oninput = () => berekenUF(true);
     dryWeightInput.oninput = () => berekenUF(true);
 
-    // --- LIVE FIREBASE SYNC LUISTERAAR ---
+    // Luister naar data-updates van andere tablets
     sessionRef.on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -251,15 +269,16 @@
           preWeightInput.value = data.preWeight;
           berekenUF(false);
         }
-        document.getElementById('firebaseStatus').innerText = "Verbonden ⚡";
+        if (data.dryWeight && data.dryWeight != dryWeightInput.value) {
+          dryWeightInput.value = data.dryWeight;
+          berekenUF(false);
+        }
       }
-    }, () => {
-      document.getElementById('firebaseStatus').innerText = "Offline ⚠️";
     });
 
     // --- COUNTDOWN TIMER ---
     let timerInterval = null;
-    let timeLeft = 8 * 3600; // 8 uur standaard nachtdialyse
+    let timeLeft = 8 * 3600;
     const timerDisplay = document.getElementById('countdownTimer');
 
     function updateTimerDisplay() {
