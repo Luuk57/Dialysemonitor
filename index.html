@@ -20,6 +20,9 @@
   <style>
     body { overscroll-behavior: none; user-select: none; }
     #dimmer { position: fixed; inset: 0; background: black; pointer-events: none; opacity: 0; z-index: 9999; transition: opacity 0.3s; }
+    /* Zorg dat actieve tabbladen goed zichtbaar zijn */
+    .tab-pane { display: none; }
+    .tab-pane.active { display: flex; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen w-screen flex flex-col overflow-hidden relative">
@@ -28,14 +31,14 @@
   <div id="dimmer"></div>
 
   <!-- ==================== VASTE BOBENBALK ==================== -->
-  <header class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center z-10 shrink-0">
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center z-20 shrink-0">
     <div class="flex items-center gap-3">
       <span class="text-xl">🩺</span>
       <h1 class="font-bold tracking-wide text-sky-400 text-sm">Dialyse Kiosk</h1>
       <span id="syncStatus" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-medium">Live Synced ⚡</span>
     </div>
 
-    <!-- Live Aftelklok in de bovenbalk die altijd meeloopt -->
+    <!-- Live Aftelklok in de bovenbalk -->
     <div class="flex items-center gap-2 bg-slate-950 px-4 py-1 rounded-xl border border-slate-800">
       <span class="text-xs text-slate-400">⏱️ Restant:</span>
       <span id="topCountdown" class="font-extrabold text-sky-400 text-base tracking-wider">08:00:00</span>
@@ -48,16 +51,16 @@
         <input type="range" id="brightnessRange" min="0" max="80" value="0" class="w-16 accent-sky-400 cursor-pointer">
       </div>
 
-      <button id="fullscreenBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold transition">⛶ Full</button>
-      <button id="lockBtn" class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg text-xs font-semibold transition">🔒 Slot</button>
+      <button id="fullscreenBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer">⛶ Full</button>
+      <button id="lockBtn" class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer">🔒 Slot</button>
     </div>
   </header>
 
   <!-- ==================== MAIN PAGINA INHOUD (TABBLADEN) ==================== -->
-  <main class="flex-1 p-4 overflow-y-auto relative">
+  <main class="flex-1 p-4 overflow-y-auto relative flex flex-col justify-center items-center">
     
     <!-- TAB 1: GEWICHT -->
-    <section id="tab-gewicht" class="tab-content flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+    <div id="tab-gewicht" class="tab-pane active flex-col gap-4 w-full max-w-xl mx-auto">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
         <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">⚖️ Gewicht & Invoer</h2>
         <div class="grid grid-cols-2 gap-4">
@@ -71,32 +74,32 @@
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
     <!-- TAB 2: UF ADVIES -->
-    <section id="tab-uf" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+    <div id="tab-uf" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
       <div id="ufResultCard" class="p-6 rounded-2xl border transition-all text-center bg-emerald-500/10 border-emerald-500/30 shadow-lg">
         <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Berekend UF Advies (Pre - Droog + 0.3)</div>
         <div id="ufValue" class="text-5xl font-extrabold text-emerald-400 mb-3">3.8 kg</div>
         <div id="ufTrafficLabel" class="text-base font-bold text-emerald-300">Normaal / Goed (&lt; 4.0 kg) 🟢</div>
       </div>
-    </section>
+    </div>
 
     <!-- TAB 3: TIJD & COUNTDOWN -->
-    <section id="tab-tijd" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+    <div id="tab-tijd" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center shadow-lg">
         <h2 class="text-sky-400 font-bold text-lg mb-4">⏱️ Live Dialyse Countdown</h2>
         <div id="countdownTimer" class="text-6xl font-extrabold text-sky-400 tracking-widest my-4">08:00:00</div>
         <div class="flex gap-3 mt-4 w-full">
-          <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold transition">Start</button>
-          <button id="pauseTimer" class="flex-1 bg-amber-600 hover:bg-amber-500 py-3 rounded-xl font-bold transition">Pauze</button>
-          <button id="resetTimer" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition">Reset</button>
+          <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold transition cursor-pointer">Start</button>
+          <button id="pauseTimer" class="flex-1 bg-amber-600 hover:bg-amber-500 py-3 rounded-xl font-bold transition cursor-pointer">Pauze</button>
+          <button id="resetTimer" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition cursor-pointer">Reset</button>
         </div>
       </div>
-    </section>
+    </div>
 
     <!-- TAB 4: BPM / HARTLAG & BLOEDDRUK -->
-    <section id="tab-bpm" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+    <div id="tab-bpm" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
         <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">❤️ Bloeddruk & Hartslag (BPM)</h2>
         <div class="grid grid-cols-2 gap-4">
@@ -110,20 +113,20 @@
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
     <!-- TAB 5: PATIENT -->
-    <section id="tab-patient" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+    <div id="tab-patient" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm">
         <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">👤 Patiënt Informatie</h2>
         <div class="flex justify-between py-1 border-b border-slate-800/50"><span>Naam:</span> <span class="font-bold">Thuisdialyse Patiënt</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800/50"><span>Standaard Drooggewicht:</span> <span class="font-bold">109.0 kg</span></div>
         <div class="flex justify-between py-1"><span>Apparatuur:</span> <span class="font-bold">Lenovo M10 & P12 (Kiosk Mode)</span></div>
       </div>
-    </section>
+    </div>
 
     <!-- TAB 6: OVERZICHT -->
-    <section id="tab-overzicht" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+    <div id="tab-overzicht" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm text-center">
         <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">📊 Sessie Overzicht</h2>
         <div class="grid grid-cols-2 gap-3 mt-2">
@@ -137,33 +140,33 @@
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
   </main>
 
   <!-- ==================== VASTE ONDERBALK MET 6 TEGELS ==================== -->
-  <nav class="bg-slate-900 border-t border-slate-800 p-2 grid grid-cols-6 gap-2 shrink-0 z-10">
-    <button onclick="switchTab('gewicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="gewicht">
+  <nav class="bg-slate-900 border-t border-slate-800 p-2 grid grid-cols-6 gap-2 shrink-0 z-20">
+    <button onclick="switchTab('gewicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="gewicht">
       <span class="text-lg">⚖️</span>
       <span class="text-[10px] font-bold mt-0.5">Gewicht</span>
     </button>
-    <button onclick="switchTab('uf')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="uf">
+    <button onclick="switchTab('uf')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="uf">
       <span class="text-lg">💧</span>
       <span class="text-[10px] font-bold mt-0.5">UF</span>
     </button>
-    <button onclick="switchTab('tijd')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="tijd">
+    <button onclick="switchTab('tijd')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="tijd">
       <span class="text-lg">⏱️</span>
       <span class="text-[10px] font-bold mt-0.5">Tijd</span>
     </button>
-    <button onclick="switchTab('bpm')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="bpm">
+    <button onclick="switchTab('bpm')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="bpm">
       <span class="text-lg">❤️</span>
       <span class="text-[10px] font-bold mt-0.5">BPM</span>
     </button>
-    <button onclick="switchTab('patient')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="patient">
+    <button onclick="switchTab('patient')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="patient">
       <span class="text-lg">👤</span>
       <span class="text-[10px] font-bold mt-0.5">Patiënt</span>
     </button>
-    <button onclick="switchTab('overzicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="overzicht">
+    <button onclick="switchTab('overzicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="overzicht">
       <span class="text-lg">📊</span>
       <span class="text-[10px] font-bold mt-0.5">Overzicht</span>
     </button>
@@ -175,8 +178,8 @@
       <h3 class="text-lg font-bold mb-4">Voer PIN in (8)</h3>
       <input type="password" id="pinInput" maxlength="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl text-center text-3xl py-3 mb-4 tracking-widest outline-none focus:ring-2 focus:ring-sky-500" placeholder="••••">
       <div class="flex gap-2">
-        <button id="pinCancel" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-bold transition">Annuleer</button>
-        <button id="pinSubmit" class="flex-1 bg-sky-600 hover:bg-sky-500 py-2.5 rounded-xl font-bold transition">Ontgrendel</button>
+        <button id="pinCancel" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-bold transition cursor-pointer">Annuleer</button>
+        <button id="pinSubmit" class="flex-1 bg-sky-600 hover:bg-sky-500 py-2.5 rounded-xl font-bold transition cursor-pointer">Ontgrendel</button>
       </div>
     </div>
   </div>
@@ -184,8 +187,8 @@
   <script>
     // --- TABBLAD NAVIGATIE ---
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         if (btn.getAttribute('data-tab') === tabId) {
@@ -195,7 +198,6 @@
         }
       });
     }
-    // Zet standaard tabblad op gewicht
     switchTab('gewicht');
 
     // --- FIREBASE CONFIGURATIE ---
@@ -258,4 +260,103 @@
       const dry = parseFloat(dryWeightInput.value) || 109.0;
       
       const uf = (pre - dry + 0.3).toFixed(1);
-      const ufNum = parseFloat(
+      const ufNum = parseFloat(uf);
+
+      ufValueEl.innerText = uf + ' kg';
+      overviewUF.innerText = uf + ' kg';
+
+      ufResultCard.className = "p-6 rounded-2xl border transition-all text-center shadow-lg ";
+      if (ufNum >= 4.5) {
+        ufResultCard.classList.add('bg-rose-500/10', 'border-rose-500/30');
+        ufValueEl.className = "text-5xl font-extrabold text-rose-400 mb-3";
+        ufTrafficLabel.className = "text-base font-bold text-rose-300";
+        ufTrafficLabel.innerText = "Let op: Zeer hoog UF advies (>= 4.5 kg) 🔴";
+      } else if (ufNum >= 4.0) {
+        ufResultCard.classList.add('bg-amber-500/10', 'border-amber-500/30');
+        ufValueEl.className = "text-5xl font-extrabold text-amber-400 mb-3";
+        ufTrafficLabel.className = "text-base font-bold text-amber-300";
+        ufTrafficLabel.innerText = "Waarschuwing: Verhoogd UF advies (>= 4.0 kg) 🟠";
+      } else {
+        ufResultCard.classList.add('bg-emerald-500/10', 'border-emerald-500/30');
+        ufValueEl.className = "text-5xl font-extrabold text-emerald-400 mb-3";
+        ufTrafficLabel.className = "text-base font-bold text-emerald-300";
+        ufTrafficLabel.innerText = "Normaal / Goed (< 4.0 kg) 🟢";
+      }
+
+      if (syncToFirebase) {
+        sessionRef.update({ preWeight: pre, dryWeight: dry, uf: uf });
+      }
+    }
+
+    preWeightInput.oninput = () => berekenUF(true);
+    dryWeightInput.oninput = () => berekenUF(true);
+
+    // --- COUNTDOWN TIMER ---
+    let timeLeft = 8 * 3600;
+    let isRunning = false;
+    const timerDisplay = document.getElementById('countdownTimer');
+    const topCountdown = document.getElementById('topCountdown');
+    const overviewTime = document.getElementById('overviewTime');
+
+    function updateTimerDisplay() {
+      const hours = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
+      const seconds = (timeLeft % 60).toString().padStart(2, '0');
+      const timeStr = `${hours}:${minutes}:${seconds}`;
+      
+      timerDisplay.innerText = timeStr;
+      topCountdown.innerText = timeStr;
+      overviewTime.innerText = timeStr;
+    }
+
+    setInterval(() => {
+      if (isRunning && timeLeft > 0) {
+        timeLeft--;
+        updateTimerDisplay();
+      }
+    }, 1000);
+
+    document.getElementById('startTimer').onclick = () => {
+      isRunning = true;
+      sessionRef.update({ isRunning: true, timeLeft: timeLeft });
+    };
+
+    document.getElementById('pauseTimer').onclick = () => {
+      isRunning = false;
+      sessionRef.update({ isRunning: false, timeLeft: timeLeft });
+    };
+
+    document.getElementById('resetTimer').onclick = () => {
+      isRunning = false;
+      timeLeft = 8 * 3600;
+      updateTimerDisplay();
+      sessionRef.update({ isRunning: false, timeLeft: timeLeft });
+    };
+
+    // --- LIVE FIREBASE LUISTERSTROOM ---
+    sessionRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        if (data.preWeight && data.preWeight != preWeightInput.value) {
+          preWeightInput.value = data.preWeight;
+          berekenUF(false);
+        }
+        if (data.dryWeight && data.dryWeight != dryWeightInput.value) {
+          dryWeightInput.value = data.dryWeight;
+          berekenUF(false);
+        }
+        if (typeof data.isRunning === 'boolean') {
+          isRunning = data.isRunning;
+        }
+        if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
+          timeLeft = data.timeLeft;
+          updateTimerDisplay();
+        }
+      }
+    });
+
+    updateTimerDisplay();
+    berekenUF(false);
+  </script>
+</body>
+</html>
