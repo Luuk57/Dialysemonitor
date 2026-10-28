@@ -101,7 +101,16 @@
 
       <!-- Overzicht & Tabel van Metingen -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
-        <h3 class="text-sky-400 font-bold text-sm border-b border-slate-800 pb-2">📋 Overzicht Eerdere Dialyses</h3>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-2 gap-2">
+          <h3 class="text-sky-400 font-bold text-sm">📋 Overzicht Eerdere Dialyses</h3>
+          <!-- Statistieken Balk -->
+          <div class="flex gap-2 text-[11px]">
+            <span class="bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">Hoog: <strong id="statHigh" class="text-sky-400">-</strong></span>
+            <span class="bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">Laag: <strong id="statLow" class="text-emerald-400">-</strong></span>
+            <span class="bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">Gem: <strong id="statAvg" class="text-amber-400">-</strong></span>
+          </div>
+        </div>
+
         <div class="overflow-x-auto max-h-48">
           <table class="w-full text-left text-xs">
             <thead class="text-slate-400 border-b border-slate-800">
@@ -318,14 +327,12 @@
       const pre = parseFloat(preWeightInput.value) || 0;
       const post = parseFloat(postWeightInput.value) || 0;
       
-      // Berekend UF advies: (pre - dry + 0.3) in ml
       const ufKg = (pre - dry + 0.3);
       const ufMl = Math.round(ufKg * 1000);
 
       ufValueEl.innerText = ufMl + ' ml';
       overviewUF.innerText = ufMl + ' ml';
 
-      // Automatische Werkelijke UF op basis van Pre - Post in ml
       const actualUfMl = Math.round((pre - post) * 1000);
       actualUfDisplay.innerText = (pre > 0 && post > 0) ? actualUfMl + ' ml' : '0 ml';
 
@@ -364,6 +371,9 @@
     // --- OPSLAAN, BEWERKEN & VERWIJDEREN VAN SESSIES ---
     const historyTableBody = document.getElementById('historyTableBody');
     const chartContainer = document.getElementById('chartContainer');
+    const statHigh = document.getElementById('statHigh');
+    const statLow = document.getElementById('statLow');
+    const statAvg = document.getElementById('statAvg');
 
     document.getElementById('saveSessionBtn').onclick = () => {
       const pre = parseFloat(preWeightInput.value) || 0;
@@ -409,22 +419,28 @@
       }
     };
 
-    // Luister naar Historie en bouw Tabel + Grafiek
+    // Luister naar Historie en bouw Tabel, Statistieken + Grafiek
     historyRef.on('value', (snapshot) => {
       historyTableBody.innerHTML = '';
       chartContainer.innerHTML = '';
       const data = snapshot.val();
+      
+      let weights = [];
+
       if (data) {
         Object.keys(data).forEach(key => {
           const item = data[key];
           
+          if (item.pre) weights.push(parseFloat(item.pre));
+          if (item.post) weights.push(parseFloat(item.post));
+
           // Tabel vullen
           const row = document.createElement('tr');
           row.className = "border-b border-slate-900 hover:bg-slate-900/50";
           row.innerHTML = `
             <td class="py-2 px-1 text-slate-300">${item.date}</td>
-            <td class="py-2 px-1 font-bold text-sky-400">${item.pre}</td>
-            <td class="py-2 px-1 font-bold text-emerald-400">${item.post}</td>
+            <td class="py-2 px-1 font-bold text-sky-400">${item.pre} kg</td>
+            <td class="py-2 px-1 font-bold text-emerald-400">${item.post} kg</td>
             <td class="py-2 px-1 text-slate-300">${item.calculatedUf}</td>
             <td class="py-2 px-1 text-sky-300">${item.setUf || '-'}</td>
             <td class="py-2 px-1 font-bold text-amber-400">${item.actualUf || '-'}</td>
@@ -452,6 +468,25 @@
           `;
           chartContainer.appendChild(barGroup);
         });
+
+        // Bereken statistieken (Hoog, Laag, Gemiddeld)
+        if (weights.length > 0) {
+          const maxVal = Math.max(...weights);
+          const minVal = Math.min(...weights);
+          const avgVal = (weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1);
+
+          statHigh.innerText = maxVal + ' kg';
+          statLow.innerText = minVal + ' kg';
+          statAvg.innerText = avgVal + ' kg';
+        } else {
+          statHigh.innerText = '-';
+          statLow.innerText = '-';
+          statAvg.innerText = '-';
+        }
+      } else {
+        statHigh.innerText = '-';
+        statLow.innerText = '-';
+        statAvg.innerText = '-';
       }
     });
 
