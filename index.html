@@ -171,7 +171,10 @@
           <!-- MIDDELSTE VAK: Klok met 36 LED rand -->
           <div class="flex flex-col items-center justify-center">
             <div class="flex justify-between w-full px-2 mb-2 text-xs font-semibold text-slate-400">
-              <span>Start: <strong id="startTimeDisplay" class="text-sky-400">--:--</strong></span>
+              <div class="flex items-center gap-1">
+                <span>Start:</span>
+                <input type="time" id="startTimeInput" class="bg-slate-950 border border-slate-700 text-sky-400 rounded px-1 py-0.5 text-xs font-bold outline-none cursor-pointer">
+              </div>
               <div class="flex items-center gap-1">
                 <span>Eind:</span>
                 <input type="time" id="endTimeInput" class="bg-slate-950 border border-slate-700 text-emerald-400 rounded px-1 py-0.5 text-xs font-bold outline-none cursor-pointer">
@@ -180,7 +183,6 @@
 
             <!-- Ronde Klok met 36 LED's -->
             <div class="relative w-56 h-56 flex items-center justify-center my-1">
-              <!-- Container waar via JS 36 LED's in worden gezet -->
               <div id="ledRingContainer" class="absolute inset-0 rounded-full pointer-events-none"></div>
 
               <!-- Centrum Tijd -->
@@ -305,7 +307,7 @@
   </div>
 
   <script>
-    // --- DYNAMISCH GENEREREN VAN 36 LED's IN EEN CIRKEL ---
+    // --- 36 LED's GENEREREN ---
     const ledRingContainer = document.getElementById('ledRingContainer');
     const TOTAL_LEDS = 36;
     for (let i = 0; i < TOTAL_LEDS; i++) {
@@ -313,7 +315,6 @@
       const dot = document.createElement('div');
       dot.className = "absolute w-2 h-3.5 bg-slate-800 rounded-sm led-dot";
       
-      // Bereken X en Y positie rondom het midden (radius ~ 102px)
       const radius = 104;
       const rad = (angle - 90) * (Math.PI / 180);
       const x = 112 + radius * Math.cos(rad) - 4;
@@ -322,10 +323,8 @@
       dot.style.left = x + 'px';
       dot.style.top = y + 'px';
       dot.style.transform = `rotate(${angle}deg)`;
-      dot.setAttribute('data-led-index', i);
       ledRingContainer.appendChild(dot);
     }
-
     const ledDots = document.querySelectorAll('.led-dot');
 
     // --- TABBLAD NAVIGATIE ---
@@ -584,31 +583,35 @@
     });
 
     // --- LED KLOK & TIMER ---
-    const TOTAL_TIME = 8 * 3600; // 8 uur basis
-    let timeLeft = TOTAL_TIME;
+    let totalDurationSec = 8 * 3600; // Standaard 8 uur
+    let timeLeft = totalDurationSec;
     let isRunning = false;
     let startTimeEpoch = null;
-    let customEndTimeStr = "";
+    let customStartTimeStr = "08:00";
+    let customEndTimeStr = "16:00";
 
     const timerDisplay = document.getElementById('countdownTimer');
     const topCountdown = document.getElementById('topCountdown');
     const overviewTime = document.getElementById('overviewTime');
     const progressPercentage = document.getElementById('progressPercentage');
-    const startTimeDisplay = document.getElementById('startTimeDisplay');
+    const startTimeInput = document.getElementById('startTimeInput');
     const endTimeInput = document.getElementById('endTimeInput');
 
+    startTimeInput.value = customStartTimeStr;
+    endTimeInput.value = customEndTimeStr;
+
     function updateTimerDisplay() {
-      const hours = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
-      const minutes = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
-      const seconds = (timeLeft % 60).toString().padStart(2, '0');
+      const hours = Math.floor(Math.max(timeLeft, 0) / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((Math.max(timeLeft, 0) % 3600) / 60).toString().padStart(2, '0');
+      const seconds = (Math.max(timeLeft, 0) % 60).toString().padStart(2, '0');
       const timeStr = `${hours}:${minutes}:${seconds}`;
       
       timerDisplay.innerText = timeStr;
       topCountdown.innerText = timeStr;
       overviewTime.innerText = timeStr;
 
-      const elapsed = TOTAL_TIME - timeLeft;
-      const progress = Math.min(Math.max(elapsed / TOTAL_TIME, 0), 1);
+      const elapsed = totalDurationSec - timeLeft;
+      const progress = Math.min(Math.max(elapsed / totalDurationSec, 0), 1);
       const percent = Math.round(progress * 100);
 
       progressPercentage.innerText = percent + '% verstreken';
@@ -616,59 +619,47 @@
       targetUfPercent.innerText = percent + '%';
       targetUfBar.style.width = percent + '%';
 
-      if (startTimeEpoch) {
-        const startD = new Date(startTimeEpoch);
-        startTimeDisplay.innerText = startD.toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'});
-
-        if (!customEndTimeStr) {
-          const endD = new Date(startTimeEpoch + (TOTAL_TIME * 1000));
-          const hh = String(endD.getHours()).padStart(2, '0');
-          const mm = String(endD.getMinutes()).padStart(2, '0');
-          customEndTimeStr = `${hh}:${mm}`;
-          endTimeInput.value = customEndTimeStr;
-        }
-      } else {
-        startTimeDisplay.innerText = '--:--';
-      }
-
-      // LED Ring (36 segmenten): Alleen branden vanaf start tot stop
+      // LED Ring (36 segmenten): Alleen branden tussen start en eindtijd in het gekozen blok
       const activeLeds = Math.round(progress * TOTAL_LEDS);
       ledDots.forEach((dot, index) => {
         if (!isRunning && elapsed === 0) {
-          // Uit / Neutraal voor start
           dot.style.backgroundColor = '#1e293b';
           dot.style.boxShadow = 'none';
         } else if (index < activeLeds) {
-          // Reeds verstreken LED's -> Groen
+          // Reeds verstreken deel van de behandeling -> Groen
           dot.style.backgroundColor = '#10b981';
           dot.style.boxShadow = '0 0 6px #10b981';
         } else {
-          // Nog te gaan LED's tussen start en stop -> Geel
+          // Nog te gaan deel binnen de ingestelde tijd -> Geel
           dot.style.backgroundColor = '#eab308';
           dot.style.boxShadow = '0 0 6px #eab308';
         }
       });
     }
 
-    endTimeInput.onchange = () => {
-      customEndTimeStr = endTimeInput.value;
-      if (startTimeEpoch && customEndTimeStr) {
-        const [h, m] = customEndTimeStr.split(':');
-        const now = new Date(startTimeEpoch);
-        const targetEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(h), parseInt(m));
-        
-        if (targetEnd < now) {
-          targetEnd.setDate(targetEnd.getDate() + 1);
-        }
-        
-        const newTotalSec = Math.floor((targetEnd.getTime() - now.getTime()) / 1000);
-        if (newTotalSec > 0) {
-          timeLeft = newTotalSec;
-          updateTimerDisplay();
-          sessionRef.update({ timeLeft: timeLeft, endTimeStr: customEndTimeStr });
-        }
+    function recalculateTimes() {
+      const [sh, sm] = startTimeInput.value.split(':');
+      const [eh, em] = endTimeInput.value.split(':');
+      
+      const now = new Date();
+      const startD = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(sh), parseInt(sm));
+      let endD = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(eh), parseInt(em));
+
+      if (endD <= startD) {
+        endD.setDate(endD.getDate() + 1); // Volgende dag als eindtijd vroeger is (bijv. start 22:00, eind 06:00)
       }
-    };
+
+      totalDurationSec = Math.floor((endD.getTime() - startD.getTime()) / 1000);
+      if (totalDurationSec <= 0) totalDurationSec = 8 * 3600;
+
+      if (!isRunning && startTimeEpoch === null) {
+        timeLeft = totalDurationSec;
+      }
+      updateTimerDisplay();
+    }
+
+    startTimeInput.onchange = recalculateTimes;
+    endTimeInput.onchange = recalculateTimes;
 
     setInterval(() => {
       if (isRunning && timeLeft > 0) {
@@ -682,22 +673,27 @@
       if (!startTimeEpoch) {
         startTimeEpoch = Date.now();
       }
-      sessionRef.update({ isRunning: true, timeLeft: timeLeft, startTime: startTimeEpoch, endTimeStr: customEndTimeStr });
+      sessionRef.update({ 
+        isRunning: true, 
+        timeLeft: timeLeft, 
+        startTime: startTimeEpoch, 
+        startTimeStr: startTimeInput.value,
+        endTimeStr: endTimeInput.value,
+        totalDuration: totalDurationSec
+      });
     };
 
     document.getElementById('pauseTimer').onclick = () => {
       isRunning = false;
-      sessionRef.update({ isRunning: false, timeLeft: timeLeft, startTime: startTimeEpoch, endTimeStr: customEndTimeStr });
+      sessionRef.update({ isRunning: false, timeLeft: timeLeft });
     };
 
     document.getElementById('resetTimer').onclick = () => {
       isRunning = false;
-      timeLeft = TOTAL_TIME;
       startTimeEpoch = null;
-      customEndTimeStr = "";
-      endTimeInput.value = "";
+      recalculateTimes();
       updateTimerDisplay();
-      sessionRef.update({ isRunning: false, timeLeft: timeLeft, startTime: null, endTimeStr: "" });
+      sessionRef.update({ isRunning: false, timeLeft: totalDurationSec, startTime: null });
     };
 
     // --- LIVE FIREBASE LUISTERSTROOM ---
@@ -718,10 +714,10 @@
 
         if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
         if (data.startTime) { startTimeEpoch = data.startTime; } else { startTimeEpoch = null; }
-        if (data.endTimeStr && data.endTimeStr != customEndTimeStr) {
-          customEndTimeStr = data.endTimeStr;
-          endTimeInput.value = customEndTimeStr;
-        }
+        if (data.startTimeStr && data.startTimeStr != startTimeInput.value) { startTimeInput.value = data.startTimeStr; }
+        if (data.endTimeStr && data.endTimeStr != endTimeInput.value) { endTimeInput.value = data.endTimeStr; }
+        if (data.totalDuration) { totalDurationSec = data.totalDuration; }
+
         if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
           timeLeft = data.timeLeft;
           updateTimerDisplay();
@@ -729,6 +725,7 @@
       }
     });
 
+    recalculateTimes();
     updateTimerDisplay();
     berekenUF(false);
   </script>
