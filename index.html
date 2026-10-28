@@ -22,7 +22,7 @@
     #dimmer { position: fixed; inset: 0; background: black; pointer-events: none; opacity: 0; z-index: 9999; transition: opacity 0.3s; }
     .tab-pane { display: none; }
     .tab-pane.active { display: flex; }
-    .led-segment { transition: background-color 0.5s ease, box-shadow 0.5s ease; }
+    .led-dot { transition: background-color 0.4s ease, box-shadow 0.4s ease; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen w-screen flex flex-col overflow-hidden relative">
@@ -144,10 +144,10 @@
       <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 flex flex-col shadow-2xl w-full">
         <h2 class="text-sky-400 font-bold text-base mb-3 text-center">⏱️ LED Voortgangsklok & Sessie Dashboard</h2>
         
-        <!-- Hoofdgrid: 3 Kolommen (Links, Klok in het midden, Rechts) -->
+        <!-- Hoofdgrid: 3 Kolommen -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           
-          <!-- LINKER VAK: Ingestelde UF, UF/U en Doel UF -->
+          <!-- LINKER VAK -->
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 text-xs">
             <div>
               <span class="text-slate-400 font-semibold block mb-0.5">Ingestelde UF</span>
@@ -168,7 +168,7 @@
             </div>
           </div>
 
-          <!-- MIDDELSTE VAK: Klok met LED rand -->
+          <!-- MIDDELSTE VAK: Klok met 36 LED rand -->
           <div class="flex flex-col items-center justify-center">
             <div class="flex justify-between w-full px-2 mb-2 text-xs font-semibold text-slate-400">
               <span>Start: <strong id="startTimeDisplay" class="text-sky-400">--:--</strong></span>
@@ -178,32 +178,20 @@
               </div>
             </div>
 
-            <!-- Ronde Klok met 12 LED Segmenten -->
-            <div class="relative w-52 h-52 flex items-center justify-center my-1">
-              <div class="absolute inset-0 rounded-full border-4 border-slate-800 flex items-center justify-center pointer-events-none">
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 4px; left: 50%; transform: translateX(-50%);" data-led="0"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 10px; right: 35px; transform: rotate(30deg);" data-led="1"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 30px; right: 12px; transform: rotate(60deg);" data-led="2"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 50%; right: 4px; transform: translateY(-50%) rotate(90deg);" data-led="3"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 30px; right: 12px; transform: rotate(120deg);" data-led="4"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 10px; right: 35px; transform: rotate(150deg);" data-led="5"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 4px; left: 50%; transform: translateX(-50%) rotate(180deg);" data-led="6"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 10px; left: 35px; transform: rotate(210deg);" data-led="7"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="bottom: 30px; left: 12px; transform: rotate(240deg);" data-led="8"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 50%; left: 4px; transform: translateY(-50%) rotate(270deg);" data-led="9"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 30px; left: 12px; transform: rotate(300deg);" data-led="10"></div>
-                <div class="absolute w-2.5 h-4 bg-amber-400 rounded-sm led-segment shadow-[0_0_6px_#eab308]" style="top: 10px; left: 40px; transform: rotate(330deg);" data-led="11"></div>
-              </div>
+            <!-- Ronde Klok met 36 LED's -->
+            <div class="relative w-56 h-56 flex items-center justify-center my-1">
+              <!-- Container waar via JS 36 LED's in worden gezet -->
+              <div id="ledRingContainer" class="absolute inset-0 rounded-full pointer-events-none"></div>
 
               <!-- Centrum Tijd -->
-              <div class="flex flex-col items-center z-10 bg-slate-950/90 p-3 rounded-full w-36 h-36 justify-center border border-slate-800">
+              <div class="flex flex-col items-center z-10 bg-slate-950/95 p-3 rounded-full w-36 h-36 justify-center border border-slate-800 shadow-xl">
                 <div id="countdownTimer" class="text-xl font-extrabold text-sky-400 tracking-wider">08:00:00</div>
                 <div id="progressPercentage" class="text-[10px] font-bold text-slate-400 mt-0.5">0% verstreken</div>
               </div>
             </div>
           </div>
 
-          <!-- RECHTER VAK: Bloeddruk, Behandeling % en Patiëntnaam -->
+          <!-- RECHTER VAK -->
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 text-xs">
             <div>
               <span class="text-slate-400 font-semibold block mb-0.5">Laatst Gemeten Bloeddruk</span>
@@ -317,6 +305,29 @@
   </div>
 
   <script>
+    // --- DYNAMISCH GENEREREN VAN 36 LED's IN EEN CIRKEL ---
+    const ledRingContainer = document.getElementById('ledRingContainer');
+    const TOTAL_LEDS = 36;
+    for (let i = 0; i < TOTAL_LEDS; i++) {
+      const angle = (i / TOTAL_LEDS) * 360;
+      const dot = document.createElement('div');
+      dot.className = "absolute w-2 h-3.5 bg-slate-800 rounded-sm led-dot";
+      
+      // Bereken X en Y positie rondom het midden (radius ~ 102px)
+      const radius = 104;
+      const rad = (angle - 90) * (Math.PI / 180);
+      const x = 112 + radius * Math.cos(rad) - 4;
+      const y = 112 + radius * Math.sin(rad) - 7;
+      
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+      dot.style.transform = `rotate(${angle}deg)`;
+      dot.setAttribute('data-led-index', i);
+      ledRingContainer.appendChild(dot);
+    }
+
+    const ledDots = document.querySelectorAll('.led-dot');
+
     // --- TABBLAD NAVIGATIE ---
     function switchTab(tabId) {
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
@@ -390,13 +401,11 @@
     const setUfInput = document.getElementById('setUfInput');
     const actualUfDisplay = document.getElementById('actualUfDisplay');
 
-    // Dashboard elementen linkerkant
     const panelSetUf = document.getElementById('panelSetUf');
     const panelUfPerHour = document.getElementById('panelUfPerHour');
     const targetUfPercent = document.getElementById('targetUfPercent');
     const targetUfBar = document.getElementById('targetUfBar');
     
-    // Dashboard elementen rechterkant
     const panelBp = document.getElementById('panelBp');
     const panelTreatmentPercent = document.getElementById('panelTreatmentPercent');
     const bloeddrukInput = document.getElementById('bloeddrukInput');
@@ -416,10 +425,7 @@
     function updateDashboardValues() {
       const setUfVal = parseFloat(setUfInput.value) || 3800;
       panelSetUf.innerText = setUfVal + ' ml';
-
-      // UF per uur (uitgaande van totale tijd in uren, bijv. timeLeft / 3600 of standaard 8 uur)
-      const hoursLeft = Math.max(timeLeft / 3600, 0.1);
-      const ufPerHour = Math.round(setUfVal / 8); // Gemiddeld over 8 uur
+      const ufPerHour = Math.round(setUfVal / 8);
       panelUfPerHour.innerText = ufPerHour + ' ml/u';
     }
 
@@ -470,7 +476,7 @@
     preWeightInput.oninput = () => berekenUF(true);
     postWeightInput.oninput = () => berekenUF(true);
 
-    // --- OPSLAAN, BEWERKEN & VERWIJDEREN VAN SESSIES ---
+    // --- OPSLAAN, BEWERKEN & VERWIJDEREN ---
     const historyTableBody = document.getElementById('historyTableBody');
     const chartContainer = document.getElementById('chartContainer');
     const statHigh = document.getElementById('statHigh');
@@ -577,7 +583,7 @@
       }
     });
 
-    // --- LED VOORTGANGSKLOK & TIMER ---
+    // --- LED KLOK & TIMER ---
     const TOTAL_TIME = 8 * 3600; // 8 uur basis
     let timeLeft = TOTAL_TIME;
     let isRunning = false;
@@ -590,7 +596,6 @@
     const progressPercentage = document.getElementById('progressPercentage');
     const startTimeDisplay = document.getElementById('startTimeDisplay');
     const endTimeInput = document.getElementById('endTimeInput');
-    const ledSegments = document.querySelectorAll('.led-segment');
 
     function updateTimerDisplay() {
       const hours = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
@@ -602,19 +607,15 @@
       topCountdown.innerText = timeStr;
       overviewTime.innerText = timeStr;
 
-      // Voortgang berekenen
       const elapsed = TOTAL_TIME - timeLeft;
       const progress = Math.min(Math.max(elapsed / TOTAL_TIME, 0), 1);
       const percent = Math.round(progress * 100);
 
       progressPercentage.innerText = percent + '% verstreken';
       panelTreatmentPercent.innerText = percent + '%';
-
-      // Doel UF Voortgangsbalk (0 tot ingestelde UF)
       targetUfPercent.innerText = percent + '%';
       targetUfBar.style.width = percent + '%';
 
-      // Start- en Eindtijd berekening
       if (startTimeEpoch) {
         const startD = new Date(startTimeEpoch);
         startTimeDisplay.innerText = startD.toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'});
@@ -630,20 +631,25 @@
         startTimeDisplay.innerText = '--:--';
       }
 
-      // LED Ring aansturen (12 segmenten)
-      const activeLeds = Math.round(progress * ledSegments.length);
-      ledSegments.forEach((led, index) => {
-        if (index < activeLeds) {
-          led.style.backgroundColor = '#10b981';
-          led.style.boxShadow = '0 0 8px #10b981';
+      // LED Ring (36 segmenten): Alleen branden vanaf start tot stop
+      const activeLeds = Math.round(progress * TOTAL_LEDS);
+      ledDots.forEach((dot, index) => {
+        if (!isRunning && elapsed === 0) {
+          // Uit / Neutraal voor start
+          dot.style.backgroundColor = '#1e293b';
+          dot.style.boxShadow = 'none';
+        } else if (index < activeLeds) {
+          // Reeds verstreken LED's -> Groen
+          dot.style.backgroundColor = '#10b981';
+          dot.style.boxShadow = '0 0 6px #10b981';
         } else {
-          led.style.backgroundColor = '#eab308';
-          led.style.boxShadow = '0 0 6px #eab308';
+          // Nog te gaan LED's tussen start en stop -> Geel
+          dot.style.backgroundColor = '#eab308';
+          dot.style.boxShadow = '0 0 6px #eab308';
         }
       });
     }
 
-    // Als gebruiker de eindtijd aanpast
     endTimeInput.onchange = () => {
       customEndTimeStr = endTimeInput.value;
       if (startTimeEpoch && customEndTimeStr) {
@@ -651,7 +657,6 @@
         const now = new Date(startTimeEpoch);
         const targetEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(h), parseInt(m));
         
-        // Als eindtijd voor starttijd ligt, neem volgende dag aan
         if (targetEnd < now) {
           targetEnd.setDate(targetEnd.getDate() + 1);
         }
