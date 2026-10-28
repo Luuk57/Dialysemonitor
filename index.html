@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Dialyse Log - Kiosk</title>
+  <title>Dialyse Log - Kiosk Dashboard</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -27,88 +27,147 @@
   <!-- Helderheid / Dimmer overlay -->
   <div id="dimmer"></div>
 
-  <!-- Top Kiosk Bar -->
-  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center z-10">
+  <!-- ==================== VASTE BOBENBALK ==================== -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center z-10 shrink-0">
     <div class="flex items-center gap-3">
       <span class="text-xl">🩺</span>
-      <h1 class="font-bold tracking-wide text-sky-400">Dialyse Log Kiosk</h1>
+      <h1 class="font-bold tracking-wide text-sky-400 text-sm">Dialyse Kiosk</h1>
       <span id="syncStatus" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-medium">Live Synced ⚡</span>
     </div>
+
+    <!-- Live Aftelklok in de bovenbalk die altijd meeloopt -->
+    <div class="flex items-center gap-2 bg-slate-950 px-4 py-1 rounded-xl border border-slate-800">
+      <span class="text-xs text-slate-400">⏱️ Restant:</span>
+      <span id="topCountdown" class="font-extrabold text-sky-400 text-base tracking-wider">08:00:00</span>
+    </div>
     
-    <div class="flex items-center gap-4 text-sm">
+    <div class="flex items-center gap-3 text-sm">
       <!-- Helderheid Slider -->
-      <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
-        <span>🌙 Dimmer:</span>
-        <input type="range" id="brightnessRange" min="0" max="80" value="0" class="w-24 accent-sky-400 cursor-pointer">
+      <div class="hidden md:flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-xl border border-slate-700 text-xs">
+        <span>🌙 Dim:</span>
+        <input type="range" id="brightnessRange" min="0" max="80" value="0" class="w-16 accent-sky-400 cursor-pointer">
       </div>
 
-      <!-- Fullscreen knop -->
-      <button id="fullscreenBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl font-semibold transition">⛶ Fullscreen</button>
-      
-      <!-- Kiosk Vergrendeling -->
-      <button id="lockBtn" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-xl font-semibold transition">🔒 Kiosk Sluiten</button>
+      <button id="fullscreenBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold transition">⛶ Full</button>
+      <button id="lockBtn" class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg text-xs font-semibold transition">🔒 Slot</button>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 overflow-y-auto">
+  <!-- ==================== MAIN PAGINA INHOUD (TABBLADEN) ==================== -->
+  <main class="flex-1 p-4 overflow-y-auto relative">
     
-    <!-- Kolom 1: Live Countdown & Sessie -->
-    <div class="flex flex-col gap-4">
-      <!-- Countdown Kaart -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col items-center text-center shadow-lg">
-        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">⏱️ Live Dialyse Countdown (Multi-device)</h2>
-        <div id="countdownTimer" class="text-5xl font-extrabold text-sky-400 tracking-widest my-2">08:00:00</div>
-        <div class="flex gap-2 mt-3 w-full">
-          <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold transition">Start</button>
-          <button id="pauseTimer" class="flex-1 bg-amber-600 hover:bg-amber-500 py-2.5 rounded-xl font-bold transition">Pauze</button>
-          <button id="resetTimer" class="flex-1 bg-slate-700 hover:bg-slate-600 py-2.5 rounded-xl font-bold transition">Reset</button>
-        </div>
-      </div>
-
-      <!-- Status Kaart -->
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between flex-1">
-        <div>
-          <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">⚡ Tablet Status</h2>
-          <div class="flex items-center justify-between py-2 border-b border-slate-800 text-sm">
-            <span>Wake Lock (Scherm aan):</span>
-            <span id="wakelockStatus" class="font-bold text-emerald-400">Controleren...</span>
+    <!-- TAB 1: GEWICHT -->
+    <section id="tab-gewicht" class="tab-content flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
+        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">⚖️ Gewicht & Invoer</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Pre-gewicht (kg)</label>
+            <input type="number" step="0.1" id="preWeight" value="112.5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xl font-bold text-center focus:ring-2 focus:ring-sky-500 outline-none">
           </div>
-          <div class="flex items-center justify-between py-2 text-sm">
-            <span>Live Sync (Firebase):</span>
-            <span id="firebaseStatusText" class="font-bold text-emerald-400">Verbonden ⚡</span>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Drooggewicht (kg)</label>
+            <input type="number" step="0.1" id="dryWeight" value="109.0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xl font-bold text-center focus:ring-2 focus:ring-sky-500 outline-none">
           </div>
         </div>
-        <div class="text-xs text-slate-500 mt-4 text-center">
-          Volledig gesynchroniseerd tussen M10, P12 en al je andere schermen.
-        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Kolom 2: Gewichten & UF Berekening -->
-    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
-      <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800 pb-2">⚖️ Gewicht & UF Advies</h2>
-      
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Pre-gewicht (kg)</label>
-          <input type="number" step="0.1" id="preWeight" value="112.5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-lg font-bold text-center focus:ring-2 focus:ring-sky-500 outline-none">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Drooggewicht (kg)</label>
-          <input type="number" step="0.1" id="dryWeight" value="109.0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-lg font-bold text-center focus:ring-2 focus:ring-sky-500 outline-none">
-        </div>
+    <!-- TAB 2: UF ADVIES -->
+    <section id="tab-uf" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+      <div id="ufResultCard" class="p-6 rounded-2xl border transition-all text-center bg-emerald-500/10 border-emerald-500/30 shadow-lg">
+        <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Berekend UF Advies (Pre - Droog + 0.3)</div>
+        <div id="ufValue" class="text-5xl font-extrabold text-emerald-400 mb-3">3.8 kg</div>
+        <div id="ufTrafficLabel" class="text-base font-bold text-emerald-300">Normaal / Goed (&lt; 4.0 kg) 🟢</div>
       </div>
+    </section>
 
-      <!-- Resultaat Box met Traffic Light Kleurcodering -->
-      <div id="ufResultCard" class="mt-auto p-5 rounded-2xl border transition-all text-center bg-emerald-500/10 border-emerald-500/30">
-        <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">Berekend UF Advies</div>
-        <div id="ufValue" class="text-4xl font-extrabold text-emerald-400 mb-2">3.8 kg</div>
-        <div id="ufTrafficLabel" class="text-sm font-bold text-emerald-300">Normaal / Goed (&lt; 4.0 kg)</div>
+    <!-- TAB 3: TIJD & COUNTDOWN -->
+    <section id="tab-tijd" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center shadow-lg">
+        <h2 class="text-sky-400 font-bold text-lg mb-4">⏱️ Live Dialyse Countdown</h2>
+        <div id="countdownTimer" class="text-6xl font-extrabold text-sky-400 tracking-widest my-4">08:00:00</div>
+        <div class="flex gap-3 mt-4 w-full">
+          <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold transition">Start</button>
+          <button id="pauseTimer" class="flex-1 bg-amber-600 hover:bg-amber-500 py-3 rounded-xl font-bold transition">Pauze</button>
+          <button id="resetTimer" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition">Reset</button>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- TAB 4: BPM / HARTLAG & BLOEDDRUK -->
+    <section id="tab-bpm" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
+        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">❤️ Bloeddruk & Hartslag (BPM)</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Bloeddruk (mmHg)</label>
+            <input type="text" id="bloeddrukInput" placeholder="120/80" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-lg font-bold text-center outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Hartslag (BPM)</label>
+            <input type="number" id="bpmInput" placeholder="72" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-lg font-bold text-center outline-none">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: PATIENT -->
+    <section id="tab-patient" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm">
+        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">👤 Patiënt Informatie</h2>
+        <div class="flex justify-between py-1 border-b border-slate-800/50"><span>Naam:</span> <span class="font-bold">Thuisdialyse Patiënt</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800/50"><span>Standaard Drooggewicht:</span> <span class="font-bold">109.0 kg</span></div>
+        <div class="flex justify-between py-1"><span>Apparatuur:</span> <span class="font-bold">Lenovo M10 & P12 (Kiosk Mode)</span></div>
+      </div>
+    </section>
+
+    <!-- TAB 6: OVERZICHT -->
+    <section id="tab-overzicht" class="tab-content hidden flex flex-col gap-4 max-w-xl mx-auto h-full justify-center">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm text-center">
+        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">📊 Sessie Overzicht</h2>
+        <div class="grid grid-cols-2 gap-3 mt-2">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div class="text-xs text-slate-400">Restant Tijd</div>
+            <div id="overviewTime" class="text-xl font-bold text-sky-400">08:00:00</div>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div class="text-xs text-slate-400">UF Advies</div>
+            <div id="overviewUF" class="text-xl font-bold text-emerald-400">3.8 kg</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </main>
+
+  <!-- ==================== VASTE ONDERBALK MET 6 TEGELS ==================== -->
+  <nav class="bg-slate-900 border-t border-slate-800 p-2 grid grid-cols-6 gap-2 shrink-0 z-10">
+    <button onclick="switchTab('gewicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="gewicht">
+      <span class="text-lg">⚖️</span>
+      <span class="text-[10px] font-bold mt-0.5">Gewicht</span>
+    </button>
+    <button onclick="switchTab('uf')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="uf">
+      <span class="text-lg">💧</span>
+      <span class="text-[10px] font-bold mt-0.5">UF</span>
+    </button>
+    <button onclick="switchTab('tijd')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="tijd">
+      <span class="text-lg">⏱️</span>
+      <span class="text-[10px] font-bold mt-0.5">Tijd</span>
+    </button>
+    <button onclick="switchTab('bpm')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="bpm">
+      <span class="text-lg">❤️</span>
+      <span class="text-[10px] font-bold mt-0.5">BPM</span>
+    </button>
+    <button onclick="switchTab('patient')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="patient">
+      <span class="text-lg">👤</span>
+      <span class="text-[10px] font-bold mt-0.5">Patiënt</span>
+    </button>
+    <button onclick="switchTab('overzicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500" data-tab="overzicht">
+      <span class="text-lg">📊</span>
+      <span class="text-[10px] font-bold mt-0.5">Overzicht</span>
+    </button>
+  </nav>
 
   <!-- PIN Beveiliging Modal -->
   <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50">
@@ -123,6 +182,22 @@
   </div>
 
   <script>
+    // --- TABBLAD NAVIGATIE ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.setAttribute('data-active', 'true');
+        } else {
+          btn.removeAttribute('data-active');
+        }
+      });
+    }
+    // Zet standaard tabblad op gewicht
+    switchTab('gewicht');
+
     // --- FIREBASE CONFIGURATIE ---
     const firebaseConfig = {
       apiKey: "AIzaSyDOj-x4BV4J1rkZ21R29D5KknkTaswWvw",
@@ -139,60 +214,34 @@
     const sessionRef = db.ref('dialyse_actieve_sessie');
 
     // --- WAKE LOCK API ---
-    let wakeLock = null;
     async function requestWakeLock() {
       if ('wakeLock' in navigator) {
-        try {
-          wakeLock = await navigator.wakeLock.request('screen');
-          document.getElementById('wakelockStatus').className = "font-bold text-emerald-400";
-          document.getElementById('wakelockStatus').innerText = "Actief 🟢";
-        } catch (err) {
-          document.getElementById('wakelockStatus').className = "font-bold text-rose-400";
-          document.getElementById('wakelockStatus').innerText = "Niet toegestaan 🔴";
-        }
-      } else {
-        document.getElementById('wakelockStatus').className = "font-bold text-slate-400";
-        document.getElementById('wakelockStatus').innerText = "Niet ondersteund ❌";
+        try { await navigator.wakeLock.request('screen'); } catch (err) {}
       }
     }
     requestWakeLock();
     document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible') {
-        await requestWakeLock();
-      }
+      if (document.visibilityState === 'visible') await requestWakeLock();
     });
 
-    // --- FULLSCREEN ---
+    // --- FULLSCREEN & DIMMER ---
     document.getElementById('fullscreenBtn').onclick = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-      }
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else if (document.exitFullscreen) document.exitFullscreen();
     };
 
-    // --- HELDERHEID / DIMMER ---
     const dimmer = document.getElementById('dimmer');
     document.getElementById('brightnessRange').oninput = (e) => {
       dimmer.style.opacity = e.target.value / 100;
     };
 
-    // --- KIOSK SLOT & PIN ---
+    // --- KIOSK PIN ---
     const pinModal = document.getElementById('pinModal');
     const pinInput = document.getElementById('pinInput');
-    document.getElementById('lockBtn').onclick = () => {
-      pinModal.style.display = 'flex';
-      pinInput.value = '';
-      pinInput.focus();
-    };
+    document.getElementById('lockBtn').onclick = () => { pinModal.style.display = 'flex'; pinInput.value = ''; pinInput.focus(); };
     document.getElementById('pinSubmit').onclick = () => {
-      if (pinInput.value === '8') {
-        pinModal.style.display = 'none';
-        if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-      } else {
-        alert('Onjuiste PIN!');
-        pinInput.value = '';
-      }
+      if (pinInput.value === '8') { pinModal.style.display = 'none'; if (document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }
+      else { alert('Onjuiste PIN!'); pinInput.value = ''; }
     };
     document.getElementById('pinCancel').onclick = () => pinModal.style.display = 'none';
 
@@ -200,6 +249,7 @@
     const preWeightInput = document.getElementById('preWeight');
     const dryWeightInput = document.getElementById('dryWeight');
     const ufValueEl = document.getElementById('ufValue');
+    const overviewUF = document.getElementById('overviewUF');
     const ufTrafficLabel = document.getElementById('ufTrafficLabel');
     const ufResultCard = document.getElementById('ufResultCard');
 
@@ -208,97 +258,4 @@
       const dry = parseFloat(dryWeightInput.value) || 109.0;
       
       const uf = (pre - dry + 0.3).toFixed(1);
-      const ufNum = parseFloat(uf);
-
-      ufValueEl.innerText = uf + ' kg';
-
-      ufResultCard.className = "mt-auto p-5 rounded-2xl border transition-all text-center ";
-      if (ufNum >= 4.5) {
-        ufResultCard.classList.add('bg-rose-500/10', 'border-rose-500/30');
-        ufValueEl.className = "text-4xl font-extrabold text-rose-400 mb-2";
-        ufTrafficLabel.className = "text-sm font-bold text-rose-300";
-        ufTrafficLabel.innerText = "Let op: Zeer hoog UF advies (>= 4.5 kg) 🔴";
-      } else if (ufNum >= 4.0) {
-        ufResultCard.classList.add('bg-amber-500/10', 'border-amber-500/30');
-        ufValueEl.className = "text-4xl font-extrabold text-amber-400 mb-2";
-        ufTrafficLabel.className = "text-sm font-bold text-amber-300";
-        ufTrafficLabel.innerText = "Waarschuwing: Verhoogd UF advies (>= 4.0 kg) 🟠";
-      } else {
-        ufResultCard.classList.add('bg-emerald-500/10', 'border-emerald-500/30');
-        ufValueEl.className = "text-4xl font-extrabold text-emerald-400 mb-2";
-        ufTrafficLabel.className = "text-sm font-bold text-emerald-300";
-        ufTrafficLabel.innerText = "Normaal / Goed (< 4.0 kg) 🟢";
-      }
-
-      if (syncToFirebase) {
-        sessionRef.update({ preWeight: pre, dryWeight: dry, uf: uf });
-      }
-    }
-
-    preWeightInput.oninput = () => berekenUF(true);
-    dryWeightInput.oninput = () => berekenUF(true);
-
-    // --- COUNTDOWN TIMER (LIVE SYNCED) ---
-    let timeLeft = 8 * 3600;
-    let isRunning = false;
-    let timerInterval = null;
-    const timerDisplay = document.getElementById('countdownTimer');
-
-    function updateTimerDisplay() {
-      const hours = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
-      const minutes = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
-      const seconds = (timeLeft % 60).toString().padStart(2, '0');
-      timerDisplay.innerText = `${hours}:${minutes}:${seconds}`;
-    }
-
-    setInterval(() => {
-      if (isRunning && timeLeft > 0) {
-        timeLeft--;
-        updateTimerDisplay();
-      }
-    }, 1000);
-
-    document.getElementById('startTimer').onclick = () => {
-      isRunning = true;
-      sessionRef.update({ isRunning: true, timeLeft: timeLeft });
-    };
-
-    document.getElementById('pauseTimer').onclick = () => {
-      isRunning = false;
-      sessionRef.update({ isRunning: false, timeLeft: timeLeft });
-    };
-
-    document.getElementById('resetTimer').onclick = () => {
-      isRunning = false;
-      timeLeft = 8 * 3600;
-      updateTimerDisplay();
-      sessionRef.update({ isRunning: false, timeLeft: timeLeft });
-    };
-
-    // --- LIVE FIREBASE LUISTERSTROOM ---
-    sessionRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        if (data.preWeight && data.preWeight != preWeightInput.value) {
-          preWeightInput.value = data.preWeight;
-          berekenUF(false);
-        }
-        if (data.dryWeight && data.dryWeight != dryWeightInput.value) {
-          dryWeightInput.value = data.dryWeight;
-          berekenUF(false);
-        }
-        if (typeof data.isRunning === 'boolean') {
-          isRunning = data.isRunning;
-        }
-        if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
-          timeLeft = data.timeLeft;
-          updateTimerDisplay();
-        }
-      }
-    });
-
-    updateTimerDisplay();
-    berekenUF(false);
-  </script>
-</body>
-</html>
+      const ufNum = parseFloat(
