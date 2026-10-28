@@ -41,7 +41,7 @@
     <!-- Live Aftelklok in de bovenbalk -->
     <div class="flex items-center gap-2 bg-slate-950 px-4 py-1 rounded-xl border border-slate-800">
       <span class="text-xs text-slate-400">⏱️ Restant:</span>
-      <span id="topCountdown" class="font-extrabold text-sky-400 text-base tracking-wider">08:00:00</span>
+      <span id="topCountdown" class="font-extrabold text-sky-400 text-base tracking-wider">04:00:00</span>
     </div>
     
     <div class="flex items-center gap-3 text-sm">
@@ -187,7 +187,7 @@
 
               <!-- Centrum Tijd -->
               <div class="flex flex-col items-center z-10 bg-slate-950/95 p-3 rounded-full w-36 h-36 justify-center border border-slate-800 shadow-xl">
-                <div id="countdownTimer" class="text-xl font-extrabold text-sky-400 tracking-wider">08:00:00</div>
+                <div id="countdownTimer" class="text-xl font-extrabold text-sky-400 tracking-wider">04:00:00</div>
                 <div id="progressPercentage" class="text-[10px] font-bold text-slate-400 mt-0.5">0% verstreken</div>
               </div>
             </div>
@@ -254,7 +254,7 @@
         <div class="grid grid-cols-2 gap-3 mt-2">
           <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
             <div class="text-xs text-slate-400">Restant Tijd</div>
-            <div id="overviewTime" class="text-xl font-bold text-sky-400">08:00:00</div>
+            <div id="overviewTime" class="text-xl font-bold text-sky-400">04:00:00</div>
           </div>
           <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
             <div class="text-xs text-slate-400">Laatste UF Advies</div>
@@ -424,7 +424,9 @@
     function updateDashboardValues() {
       const setUfVal = parseFloat(setUfInput.value) || 3800;
       panelSetUf.innerText = setUfVal + ' ml';
-      const ufPerHour = Math.round(setUfVal / 8);
+      
+      const durationHours = totalDurationSec / 3600;
+      const ufPerHour = durationHours > 0 ? Math.round(setUfVal / durationHours) : Math.round(setUfVal / 4);
       panelUfPerHour.innerText = ufPerHour + ' ml/u';
     }
 
@@ -583,12 +585,12 @@
     });
 
     // --- LED KLOK & TIMER ---
-    let totalDurationSec = 8 * 3600; // Standaard 8 uur
+    let totalDurationSec = 4 * 3600; // Standaard 4 uur
     let timeLeft = totalDurationSec;
     let isRunning = false;
     let startTimeEpoch = null;
     let customStartTimeStr = "08:00";
-    let customEndTimeStr = "16:00";
+    let customEndTimeStr = "12:00";
 
     const timerDisplay = document.getElementById('countdownTimer');
     const topCountdown = document.getElementById('topCountdown');
@@ -611,7 +613,7 @@
       overviewTime.innerText = timeStr;
 
       const elapsed = totalDurationSec - timeLeft;
-      const progress = Math.min(Math.max(elapsed / totalDurationSec, 0), 1);
+      const progress = totalDurationSec > 0 ? Math.min(Math.max(elapsed / totalDurationSec, 0), 1) : 0;
       const percent = Math.round(progress * 100);
 
       progressPercentage.innerText = percent + '% verstreken';
@@ -619,18 +621,15 @@
       targetUfPercent.innerText = percent + '%';
       targetUfBar.style.width = percent + '%';
 
-      // LED Ring (36 segmenten): Alleen branden tussen start en eindtijd in het gekozen blok
       const activeLeds = Math.round(progress * TOTAL_LEDS);
       ledDots.forEach((dot, index) => {
         if (!isRunning && elapsed === 0) {
           dot.style.backgroundColor = '#1e293b';
           dot.style.boxShadow = 'none';
         } else if (index < activeLeds) {
-          // Reeds verstreken deel van de behandeling -> Groen
           dot.style.backgroundColor = '#10b981';
           dot.style.boxShadow = '0 0 6px #10b981';
         } else {
-          // Nog te gaan deel binnen de ingestelde tijd -> Geel
           dot.style.backgroundColor = '#eab308';
           dot.style.boxShadow = '0 0 6px #eab308';
         }
@@ -646,15 +645,16 @@
       let endD = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(eh), parseInt(em));
 
       if (endD <= startD) {
-        endD.setDate(endD.getDate() + 1); // Volgende dag als eindtijd vroeger is (bijv. start 22:00, eind 06:00)
+        endD.setDate(endD.getDate() + 1);
       }
 
       totalDurationSec = Math.floor((endD.getTime() - startD.getTime()) / 1000);
-      if (totalDurationSec <= 0) totalDurationSec = 8 * 3600;
+      if (totalDurationSec <= 0) totalDurationSec = 4 * 3600;
 
       if (!isRunning && startTimeEpoch === null) {
         timeLeft = totalDurationSec;
       }
+      updateDashboardValues();
       updateTimerDisplay();
     }
 
@@ -716,7 +716,9 @@
         if (data.startTime) { startTimeEpoch = data.startTime; } else { startTimeEpoch = null; }
         if (data.startTimeStr && data.startTimeStr != startTimeInput.value) { startTimeInput.value = data.startTimeStr; }
         if (data.endTimeStr && data.endTimeStr != endTimeInput.value) { endTimeInput.value = data.endTimeStr; }
-        if (data.totalDuration) { totalDurationSec = data.totalDuration; }
+        if (data.totalDuration) { 
+          totalDurationSec = data.totalDuration; 
+        }
 
         if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
           timeLeft = data.timeLeft;
