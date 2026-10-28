@@ -144,10 +144,8 @@
       <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-5 flex flex-col shadow-2xl w-full">
         <h2 class="text-sky-400 font-bold text-base mb-3 text-center">⏱️ LED Voortgangsklok & Sessie Dashboard</h2>
         
-        <!-- Hoofdgrid: 3 Kolommen -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           
-          <!-- LINKER VAK: Klikbaar om UF in te stellen via Popup -->
           <div id="openUfPopupBtn" class="bg-slate-950 border border-slate-800 hover:border-sky-500 transition rounded-2xl p-4 flex flex-col gap-3 text-xs cursor-pointer shadow-md">
             <div>
               <span class="text-slate-400 font-semibold block mb-0.5">Ingestelde UF <span class="text-sky-400 text-[10px]">(Klik om in te stellen ✏️)</span></span>
@@ -168,7 +166,6 @@
             </div>
           </div>
 
-          <!-- MIDDELSTE VAK: Klok met 36 LED rand -->
           <div class="flex flex-col items-center justify-center">
             <div class="flex justify-between w-full px-2 mb-2 text-xs font-semibold text-slate-400">
               <div class="flex items-center gap-1">
@@ -181,11 +178,9 @@
               </div>
             </div>
 
-            <!-- Ronde Klok met 36 LED's -->
             <div class="relative w-56 h-56 flex items-center justify-center my-1">
               <div id="ledRingContainer" class="absolute inset-0 rounded-full pointer-events-none"></div>
 
-              <!-- Centrum Tijd -->
               <div class="flex flex-col items-center z-10 bg-slate-950/95 p-3 rounded-full w-36 h-36 justify-center border border-slate-800 shadow-xl">
                 <div id="countdownTimer" class="text-xl font-extrabold text-sky-400 tracking-wider">04:00:00</div>
                 <div id="progressPercentage" class="text-[10px] font-bold text-slate-400 mt-0.5">0% verstreken</div>
@@ -193,11 +188,10 @@
             </div>
           </div>
 
-          <!-- RECHTER VAK -->
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 text-xs">
             <div>
               <span class="text-slate-400 font-semibold block mb-0.5">Laatst Gemeten Bloeddruk</span>
-              <div id="panelBp" class="text-lg font-extrabold text-rose-400">120 / 80 mmHg</div>
+              <div id="panelBp" class="text-lg font-extrabold text-emerald-400">120 / 80 mmHg</div>
             </div>
             <div>
               <span class="text-slate-400 font-semibold block mb-0.5">Behandeling Voortgang</span>
@@ -211,7 +205,6 @@
 
         </div>
 
-        <!-- Timer Bedieningsknoppen -->
         <div class="flex gap-2 mt-4 w-full">
           <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold transition cursor-pointer text-sm">Start</button>
           <button id="pauseTimer" class="flex-1 bg-amber-600 hover:bg-amber-500 py-2.5 rounded-xl font-bold transition cursor-pointer text-sm">Pauze</button>
@@ -220,19 +213,80 @@
       </div>
     </div>
 
-    <!-- TAB 4: BPM / HARTLAG & BLOEDDRUK -->
-    <div id="tab-bpm" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
-        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">❤️ Bloeddruk & Hartslag (BPM)</h2>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Bloeddruk (mmHg)</label>
-            <input type="text" id="bloeddrukInput" placeholder="120/80" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-lg font-bold text-center outline-none">
+    <!-- TAB 4: BPM / BLOEDDRUK & HARTSLAG MET UP/DOWN & HISTORIE -->
+    <div id="tab-bpm" class="tab-pane flex-col gap-4 w-full max-w-3xl mx-auto pb-6">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
+        
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h2 class="text-sky-400 font-bold text-base">❤️ Bloeddruk & Hartslag Instellen (UP / DOWN)</h2>
+          <button id="newBpmBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow">
+            ➕ Nieuwe Meting
+          </button>
+        </div>
+
+        <!-- 3 Kolommen (Systolisch, Diastolisch, Hartslag) precies zoals in jouw voorbeeld -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          <!-- Kolom 1: Systolisch -->
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center gap-3">
+            <span class="text-xs font-bold text-slate-400">Systolisch (Bovendruk)</span>
+            <button onclick="adjustBpm('sys', 5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">+5</button>
+            <button onclick="adjustBpm('sys', 1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">UP</button>
+            
+            <div id="sysDisplay" class="w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-emerald-400 shadow-inner">120</div>
+            
+            <button onclick="adjustBpm('sys', -1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">DOWN</button>
+            <button onclick="adjustBpm('sys', -5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">-5</button>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Hartslag (BPM)</label>
-            <input type="number" id="bpmInput" placeholder="72" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-lg font-bold text-center outline-none">
+
+          <!-- Kolom 2: Diastolisch -->
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center gap-3">
+            <span class="text-xs font-bold text-slate-400">Diastolisch (Onderdruk)</span>
+            <button onclick="adjustBpm('dia', 5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">+5</button>
+            <button onclick="adjustBpm('dia', 1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">UP</button>
+            
+            <div id="diaDisplay" class="w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-emerald-400 shadow-inner">80</div>
+            
+            <button onclick="adjustBpm('dia', -1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">DOWN</button>
+            <button onclick="adjustBpm('dia', -5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">-5</button>
           </div>
+
+          <!-- Kolom 3: Hartslag (BPM) -->
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center gap-3">
+            <span class="text-xs font-bold text-slate-400">Hartslag (BPM)</span>
+            <button onclick="adjustBpm('hr', 5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">+5</button>
+            <button onclick="adjustBpm('hr', 1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">UP</button>
+            
+            <div id="hrDisplay" class="w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-emerald-400 shadow-inner">72</div>
+            
+            <button onclick="adjustBpm('hr', -1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">DOWN</button>
+            <button onclick="adjustBpm('hr', -5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">-5</button>
+          </div>
+
+        </div>
+
+        <!-- Groene Opslaan Knop zoals in jouw spreadsheet voorbeeld -->
+        <button id="saveBpmBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl transition cursor-pointer text-base shadow-lg shadow-emerald-900/30">
+          OPSLAAN
+        </button>
+
+      </div>
+
+      <!-- Overzichtstabel met eerdere BPM metingen (Laatste bovenaan) -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
+        <h3 class="text-sky-400 font-bold text-sm border-b border-slate-800 pb-2">📋 Overzicht Bloeddruk & Hartslag Metingen</h3>
+        <div class="overflow-x-auto max-h-48">
+          <table class="w-full text-left text-xs">
+            <thead class="text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2 px-2">Datum & Tijd</th>
+                <th class="py-2 px-2">Bloeddruk</th>
+                <th class="py-2 px-2">Hartslag</th>
+                <th class="py-2 px-2 text-right">Actie</th>
+              </tr>
+            </thead>
+            <tbody id="bpmHistoryTableBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -389,6 +443,7 @@
     const db = firebase.database();
     const sessionRef = db.ref('dialyse_actieve_sessie');
     const historyRef = db.ref('dialyse_historie');
+    const bpmHistoryRef = db.ref('dialyse_bpm_historie');
 
     // --- WAKE LOCK API ---
     async function requestWakeLock() {
@@ -439,7 +494,102 @@
     
     const panelBp = document.getElementById('panelBp');
     const panelTreatmentPercent = document.getElementById('panelTreatmentPercent');
-    const bloeddrukInput = document.getElementById('bloeddrukInput');
+
+    // --- BPM UP/DOWN LOGICA & KLEUREN ---
+    let currentSys = 120;
+    let currentDia = 80;
+    let currentHr = 72;
+
+    const sysDisplay = document.getElementById('sysDisplay');
+    const diaDisplay = document.getElementById('diaDisplay');
+    const hrDisplay = document.getElementById('hrDisplay');
+
+    window.adjustBpm = function(type, amount) {
+      if (type === 'sys') {
+        currentSys = Math.max(50, Math.min(220, currentSys + amount));
+        sysDisplay.innerText = currentSys;
+        updateBpmColor(sysDisplay, currentSys, 100, 140);
+      } else if (type === 'dia') {
+        currentDia = Math.max(30, Math.min(140, currentDia + amount));
+        diaDisplay.innerText = currentDia;
+        updateBpmColor(diaDisplay, currentDia, 60, 90);
+      } else if (type === 'hr') {
+        currentHr = Math.max(40, Math.min(180, currentHr + amount));
+        hrDisplay.innerText = currentHr;
+        updateBpmColor(hrDisplay, currentHr, 60, 100);
+      }
+    };
+
+    function updateBpmColor(el, val, greenMin, greenMax) {
+      if (val >= greenMin && val <= greenMax) {
+        el.className = "w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-emerald-400 shadow-inner";
+      } else if ((val >= greenMin - 15 && val < greenMin) || (val > greenMax && val <= greenMax + 20)) {
+        el.className = "w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-amber-400 shadow-inner";
+      } else {
+        el.className = "w-full py-4 rounded-xl text-center text-3xl font-extrabold text-white bg-rose-600 shadow-inner";
+      }
+    }
+
+    document.getElementById('newBpmBtn').onclick = () => {
+      currentSys = 120;
+      currentDia = 80;
+      currentHr = 72;
+      sysDisplay.innerText = currentSys;
+      diaDisplay.innerText = currentDia;
+      hrDisplay.innerText = currentHr;
+      updateBpmColor(sysDisplay, currentSys, 100, 140);
+      updateBpmColor(diaDisplay, currentDia, 60, 90);
+      updateBpmColor(hrDisplay, currentHr, 60, 100);
+    };
+
+    // Opslaan knop BPM
+    document.getElementById('saveBpmBtn').onclick = () => {
+      const nowStr = new Date().toLocaleDateString('nl-NL') + ' ' + new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'});
+      const bpString = `${currentSys}/${currentDia}`;
+      
+      const newRecord = {
+        date: nowStr,
+        bp: bpString,
+        hr: currentHr
+      };
+
+      bpmHistoryRef.push(newRecord);
+      panelBp.innerText = bpString + ' mmHg';
+      sessionRef.update({ bp: bpString, hr: currentHr });
+      alert('Bloeddruk & Hartslag succesvol opgeslagen!');
+    };
+
+    // Verwijderen van BPM meting
+    window.deleteBpmRecord = function(key) {
+      if (confirm('Wil je deze meting verwijderen?')) {
+        bpmHistoryRef.child(key).remove();
+      }
+    };
+
+    // Ingeladen BPM geschiedenis weergeven (laatste bovenaan)
+    const bpmHistoryTableBody = document.getElementById('bpmHistoryTableBody');
+    bpmHistoryRef.on('value', (snapshot) => {
+      bpmHistoryTableBody.innerHTML = '';
+      const data = snapshot.val();
+      if (data) {
+        // Omkeren zodat de nieuwste bovenaan komt te staan
+        const keys = Object.keys(data).reverse();
+        keys.forEach(key => {
+          const item = data[key];
+          const row = document.createElement('tr');
+          row.className = "border-b border-slate-900 hover:bg-slate-900/50";
+          row.innerHTML = `
+            <td class="py-2 px-2 text-slate-300">${item.date}</td>
+            <td class="py-2 px-2 font-bold text-emerald-400">${item.bp} mmHg</td>
+            <td class="py-2 px-2 font-bold text-sky-400">${item.hr} BPM</td>
+            <td class="py-2 px-2 text-right">
+              <button onclick="deleteBpmRecord('${key}')" class="text-rose-400 hover:underline">Verwijder</button>
+            </td>
+          `;
+          bpmHistoryTableBody.appendChild(row);
+        });
+      }
+    });
 
     // --- UF POPUP TOETSENBORD LOGICA ---
     const ufPopup = document.getElementById('ufPopup');
@@ -488,16 +638,10 @@
       sessionRef.update({ setUf: setUfInput.value });
     };
 
-    bloeddrukInput.oninput = () => {
-      panelBp.innerText = bloeddrukInput.value ? bloeddrukInput.value + ' mmHg' : '-- / --';
-      sessionRef.update({ bp: bloeddrukInput.value });
-    };
-
     function updateDashboardValues() {
       const setUfVal = parseFloat(setUfInput.value) || 3800;
       panelSetUf.innerText = setUfVal + ' ml';
       
-      // Direct herberekenen op basis van de werkelijke totale duur in uren
       const durationHours = totalDurationSec > 0 ? totalDurationSec / 3600 : 4;
       const ufPerHour = durationHours > 0 ? Math.round(setUfVal / durationHours) : 0;
       panelUfPerHour.innerText = ufPerHour + ' ml/u';
@@ -550,7 +694,7 @@
     preWeightInput.oninput = () => berekenUF(true);
     postWeightInput.oninput = () => berekenUF(true);
 
-    // --- OPSLAAN, BEWERKEN & VERWIJDEREN ---
+    // --- OPSLAAN, BEWERKEN & VERWIJDEREN (GEWICHT) ---
     const historyTableBody = document.getElementById('historyTableBody');
     const chartContainer = document.getElementById('chartContainer');
     const statHigh = document.getElementById('statHigh');
@@ -658,7 +802,7 @@
     });
 
     // --- LED KLOK & TIMER ---
-    let totalDurationSec = 4 * 3600; // Standaard 4 uur
+    let totalDurationSec = 4 * 3600;
     let timeLeft = totalDurationSec;
     let isRunning = false;
     let startTimeEpoch = null;
@@ -730,7 +874,6 @@
       updateDashboardValues();
       updateTimerDisplay();
 
-      // Synchroniseer tijdswijzigingen direct via Firebase
       sessionRef.update({
         startTimeStr: startTimeInput.value,
         endTimeStr: endTimeInput.value,
@@ -791,7 +934,6 @@
         }
         
         if (data.bp) {
-          bloeddrukInput.value = data.bp;
           panelBp.innerText = data.bp + ' mmHg';
         }
 
@@ -818,6 +960,9 @@
     recalculateTimes();
     updateTimerDisplay();
     berekenUF(false);
+    updateBpmColor(sysDisplay, currentSys, 100, 140);
+    updateBpmColor(diaDisplay, currentDia, 60, 90);
+    updateBpmColor(hrDisplay, currentHr, 60, 100);
   </script>
 </body>
 </html>
