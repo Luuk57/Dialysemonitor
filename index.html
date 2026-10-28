@@ -30,7 +30,7 @@
   <!-- Helderheid / Dimmer overlay -->
   <div id="dimmer"></div>
 
-  <!-- ==================== VASTE BOBENBALK ==================== -->
+  <!-- ==================== VASTE BOVENBALK ==================== -->
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center z-20 shrink-0">
     <div class="flex items-center gap-3">
       <span class="text-xl">🩺</span>
@@ -38,10 +38,14 @@
       <span id="syncStatus" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-medium">Live Synced ⚡</span>
     </div>
 
-    <!-- Live Aftelklok in de bovenbalk -->
-    <div class="flex items-center gap-2 bg-slate-950 px-4 py-1 rounded-xl border border-slate-800">
-      <span class="text-xs text-slate-400">⏱️ Restant:</span>
-      <span id="topCountdown" class="font-extrabold text-sky-400 text-base tracking-wider">04:00:00</span>
+    <div class="flex items-center gap-2">
+      <!-- Live Aftelklok -->
+      <div class="flex items-center gap-2 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800">
+        <span class="text-xs text-slate-400">⏱️ Restant:</span>
+        <span id="topCountdown" class="font-extrabold text-sky-400 text-sm tracking-wider">04:00:00</span>
+      </div>
+      <!-- Refresh Knop -->
+      <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-xl text-xs font-semibold transition cursor-pointer border border-slate-700" title="Pagina Vernieuwen">🔄</button>
     </div>
     
     <div class="flex items-center gap-3 text-sm">
@@ -97,7 +101,6 @@
         <button id="saveSessionBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition cursor-pointer text-sm">💾 Huidige Sessie Opslaan naar Overzicht</button>
       </div>
 
-      <!-- Overzicht & Tabel van Metingen -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-2 gap-2">
           <h3 class="text-sky-400 font-bold text-sm">📋 Overzicht Eerdere Dialyses</h3>
@@ -127,9 +130,8 @@
       </div>
     </div>
 
-    <!-- TAB 2: GRAFIEKEN (Gewicht én Bloeddruk Grafieken) -->
+    <!-- TAB 2: GRAFIEKEN -->
     <div id="tab-uf" class="tab-pane flex-col gap-4 w-full max-w-2xl mx-auto pb-6">
-      <!-- Gewichtsverloop Grafiek -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">📈 Grafiek Gewichtsverloop (Voor & Na)</h2>
         <div id="chartContainer" class="bg-slate-950 p-4 rounded-xl border border-slate-800 h-52 flex items-end gap-2 justify-around"></div>
@@ -139,10 +141,12 @@
         </div>
       </div>
 
-      <!-- Bloeddruk & Hartslag Grafiek -->
+      <!-- Bloeddruk & Hartslag Lijngrafiek -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
-        <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">❤️ Grafiek Bloeddruk & Hartslag Verloop</h2>
-        <div id="bpmChartContainer" class="bg-slate-950 p-4 rounded-xl border border-slate-800 h-52 flex items-end gap-2 justify-around"></div>
+        <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">❤️ Lijngrafiek Bloeddruk & Hartslag</h2>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 h-56 relative flex items-center justify-center">
+          <svg id="bpmLineChart" class="w-full h-full overflow-visible" viewBox="0 0 500 200"></svg>
+        </div>
         <div class="flex justify-center gap-4 text-xs text-slate-400">
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-rose-500 rounded"></span> Systolisch</span>
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-amber-500 rounded"></span> Diastolisch</span>
@@ -210,8 +214,8 @@
               <div id="panelTreatmentPercent" class="text-lg font-extrabold text-sky-400">0%</div>
             </div>
             <div>
-              <span class="text-slate-400 font-semibold block mb-0.5">Patiënt Naam</span>
-              <div class="text-base font-extrabold text-emerald-400 truncate">Thuisdialyse Patiënt</div>
+              <span class="text-slate-400 font-semibold block mb-0.5">Actieve Patiënt</span>
+              <div id="activePatientDisplay" class="text-base font-extrabold text-emerald-400 truncate">Thuisdialyse Patiënt</div>
             </div>
           </div>
 
@@ -225,7 +229,7 @@
       </div>
     </div>
 
-    <!-- TAB 4: BPM / BLOEDDRUK & HARTSLAG MET UP/DOWN & HISTORIE -->
+    <!-- TAB 4: BPM / BLOEDDRUK & HARTSLAG -->
     <div id="tab-bpm" class="tab-pane flex-col gap-4 w-full max-w-3xl mx-auto pb-6">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         
@@ -236,55 +240,40 @@
           </button>
         </div>
 
-        <!-- 3 Kolommen (Systolisch, Diastolisch, Hartslag) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
-          <!-- Kolom 1: Systolisch -->
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center gap-3">
             <span class="text-xs font-bold text-slate-400">Systolisch (Bovendruk)</span>
             <button onclick="adjustBpm('sys', 5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">+5</button>
             <button onclick="adjustBpm('sys', 1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">UP</button>
-            
             <div id="sysDisplay" class="w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-emerald-400 shadow-inner">120</div>
-            
             <button onclick="adjustBpm('sys', -1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">DOWN</button>
             <button onclick="adjustBpm('sys', -5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">-5</button>
           </div>
 
-          <!-- Kolom 2: Diastolisch -->
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center gap-3">
             <span class="text-xs font-bold text-slate-400">Diastolisch (Onderdruk)</span>
             <button onclick="adjustBpm('dia', 5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">+5</button>
             <button onclick="adjustBpm('dia', 1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">UP</button>
-            
             <div id="diaDisplay" class="w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-emerald-400 shadow-inner">80</div>
-            
             <button onclick="adjustBpm('dia', -1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">DOWN</button>
             <button onclick="adjustBpm('dia', -5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">-5</button>
           </div>
 
-          <!-- Kolom 3: Hartslag (BPM) -->
           <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center gap-3">
             <span class="text-xs font-bold text-slate-400">Hartslag (BPM)</span>
             <button onclick="adjustBpm('hr', 5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">+5</button>
             <button onclick="adjustBpm('hr', 1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">UP</button>
-            
             <div id="hrDisplay" class="w-full py-4 rounded-xl text-center text-3xl font-extrabold text-slate-950 bg-emerald-400 shadow-inner">72</div>
-            
             <button onclick="adjustBpm('hr', -1)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">DOWN</button>
             <button onclick="adjustBpm('hr', -5)" class="w-full bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs font-bold text-sky-400 cursor-pointer">-5</button>
           </div>
-
         </div>
 
-        <!-- Groene Opslaan Knop (zonder pop-up melding) -->
         <button id="saveBpmBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl transition cursor-pointer text-base shadow-lg shadow-emerald-900/30">
           OPSLAAN
         </button>
-
       </div>
 
-      <!-- Overzichtstabel met eerdere BPM metingen (Laatste bovenaan met kleurcodering) -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
         <h3 class="text-sky-400 font-bold text-sm border-b border-slate-800 pb-2">📋 Overzicht Bloeddruk & Hartslag Metingen</h3>
         <div class="overflow-x-auto max-h-48">
@@ -303,13 +292,45 @@
       </div>
     </div>
 
-    <!-- TAB 5: PATIENT -->
-    <div id="tab-patient" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm">
-        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">👤 Patiënt Informatie</h2>
-        <div class="flex justify-between py-1 border-b border-slate-800/50"><span>Naam:</span> <span class="font-bold">Thuisdialyse Patiënt</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800/50"><span>Standaard Drooggewicht:</span> <span class="font-bold">109.0 kg</span></div>
-        <div class="flex justify-between py-1"><span>Apparatuur:</span> <span class="font-bold">Lenovo M10 & P12 (Kiosk Mode)</span></div>
+    <!-- TAB 5: PATIENTENBEHEER & INLOG -->
+    <div id="tab-patient" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto pb-6">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
+        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">👤 Patiënt Beheer & Toegang</h2>
+        
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
+          <span class="text-xs font-bold text-sky-400">Actieve Patiënt Ontgrendelen met PIN</span>
+          <div class="flex gap-2">
+            <input type="password" id="loginPatientPin" maxlength="6" placeholder="Voer patiënt PIN in" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-center tracking-widest outline-none">
+            <button id="loginPatientBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">Laad Patiënt</button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-3 flex flex-col gap-3">
+          <span class="text-xs font-bold text-emerald-400">Nieuwe Patiënt Invoeren</span>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Patiënt Naam</label>
+            <input type="text" id="newPatientName" placeholder="Bijv. Jan de Vries" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm font-bold outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Drooggewicht (kg)</label>
+              <input type="number" step="0.1" id="newPatientDry" value="109.0" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm font-bold text-center outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 mb-1">Persoonlijke PIN</label>
+              <input type="password" id="newPatientPin" maxlength="6" placeholder="Bijv. 1234" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm font-bold text-center tracking-widest outline-none">
+            </div>
+          </div>
+          <button id="saveNewPatientBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition cursor-pointer text-sm mt-1">➕ Patiënt Toevoegen</button>
+        </div>
+
+        <div class="border-t border-slate-800 pt-3 flex flex-col gap-2">
+          <span class="text-xs font-bold text-rose-400">Patiënt Afvoeren (Verwijderen)</span>
+          <div class="flex gap-2">
+            <input type="password" id="deletePatientPin" maxlength="6" placeholder="PIN van patiënt om af te voeren" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-center tracking-widest outline-none">
+            <button id="deletePatientBtn" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">Afvoeren</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -364,7 +385,7 @@
     </div>
   </div>
 
-  <!-- ==================== VASTE ONDERBALK MET 6 TEGELS (HERSIEN NAAR 'Grafieken') ==================== -->
+  <!-- ==================== VASTE ONDERBALK MET 6 TEGELS ==================== -->
   <nav class="bg-slate-900 border-t border-slate-800 p-2 grid grid-cols-6 gap-2 shrink-0 z-20">
     <button onclick="switchTab('gewicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="gewicht">
       <span class="text-lg">⚖️</span>
@@ -456,6 +477,7 @@
     const sessionRef = db.ref('dialyse_actieve_sessie');
     const historyRef = db.ref('dialyse_historie');
     const bpmHistoryRef = db.ref('dialyse_bpm_historie');
+    const patientsRef = db.ref('dialyse_patienten');
 
     // --- WAKE LOCK API ---
     async function requestWakeLock() {
@@ -488,6 +510,67 @@
       else { alert('Onjuiste PIN!'); pinInput.value = ''; }
     };
     document.getElementById('pinCancel').onclick = () => pinModal.style.display = 'none';
+
+    // --- PATIENTENBEHEER LOGICA ---
+    const newPatientName = document.getElementById('newPatientName');
+    const newPatientDry = document.getElementById('newPatientDry');
+    const newPatientPin = document.getElementById('newPatientPin');
+    const loginPatientPin = document.getElementById('loginPatientPin');
+    const deletePatientPin = document.getElementById('deletePatientPin');
+    const activePatientDisplay = document.getElementById('activePatientDisplay');
+
+    document.getElementById('saveNewPatientBtn').onclick = () => {
+      const name = newPatientName.value.trim();
+      const dry = parseFloat(newPatientDry.value) || 109.0;
+      const pin = newPatientPin.value.trim();
+
+      if (!name || !pin) {
+        alert('Vul alstublieft een naam en PIN-code in!');
+        return;
+      }
+
+      patientsRef.child(pin).set({
+        name: name,
+        dryWeight: dry,
+        pin: pin
+      });
+
+      alert(`Patiënt ${name} succesvol toegevoegd met PIN!`);
+      newPatientName.value = '';
+      newPatientPin.value = '';
+    };
+
+    document.getElementById('loginPatientBtn').onclick = () => {
+      const pin = loginPatientPin.value.trim();
+      patientsRef.child(pin).once('value', (snapshot) => {
+        const patient = snapshot.val();
+        if (patient) {
+          activePatientDisplay.innerText = patient.name;
+          dryWeightInput.value = patient.dryWeight;
+          berekenUF(true);
+          alert(`Patiënt ${patient.name} succesvol geladen! Drooggewicht ingesteld op ${patient.dryWeight} kg.`);
+          loginPatientPin.value = '';
+          switchTab('tijd');
+        } else {
+          alert('Onjuiste patiënt PIN-code!');
+        }
+      });
+    };
+
+    document.getElementById('deletePatientBtn').onclick = () => {
+      const pin = deletePatientPin.value.trim();
+      patientsRef.child(pin).once('value', (snapshot) => {
+        if (snapshot.exists()) {
+          if (confirm('Weet je zeker dat je deze patiënt wilt afvoeren?')) {
+            patientsRef.child(pin).remove();
+            alert('Patiënt succesvol afgevoerd.');
+            deletePatientPin.value = '';
+          }
+        } else {
+          alert('Geen patiënt gevonden met deze PIN!');
+        }
+      });
+    };
 
     // --- GEWICHT & UF BEREKENING (ML) ---
     const dryWeightInput = document.getElementById('dryWeight');
@@ -559,7 +642,6 @@
       updateBpmColor(hrDisplay, currentHr, 60, 100);
     };
 
-    // Opslaan knop BPM (zonder alert popup, inclusief kleurcodering in de tabel)
     document.getElementById('saveBpmBtn').onclick = () => {
       const nowStr = new Date().toLocaleDateString('nl-NL') + ' ' + new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'});
       const bpString = `${currentSys}/${currentDia}`;
@@ -590,21 +672,24 @@
       }
     };
 
-    // Ingeladen BPM geschiedenis met kleurcodering & grafiek weergave
+    // --- SVG LIJNGRAFIEK VOOR BLOEDDRUK & HARTSLAG ---
     const bpmHistoryTableBody = document.getElementById('bpmHistoryTableBody');
-    const bpmChartContainer = document.getElementById('bpmChartContainer');
+    const bpmLineChart = document.getElementById('bpmLineChart');
 
     bpmHistoryRef.on('value', (snapshot) => {
       bpmHistoryTableBody.innerHTML = '';
-      bpmChartContainer.innerHTML = '';
       const data = snapshot.val();
+      let records = [];
       
       if (data) {
-        const keys = Object.keys(data).reverse();
+        const keys = Object.keys(data);
         keys.forEach(key => {
-          const item = data[key];
-          
-          // Tabelrij met gekleurde badges voor de waarden
+          records.push({ key, ...data[key] });
+        });
+
+        // Oudste eerst voor de lijngrafiek, maar tabel toont nieuwste bovenaan
+        const tableRecords = [...records].reverse();
+        tableRecords.forEach(item => {
           const row = document.createElement('tr');
           row.className = "border-b border-slate-900 hover:bg-slate-900/50";
           row.innerHTML = `
@@ -617,35 +702,116 @@
               <span class="px-2 py-0.5 rounded ${item.hrClass || 'bg-emerald-400 text-slate-950'}">${item.hr} BPM</span>
             </td>
             <td class="py-2 px-2 text-right">
-              <button onclick="deleteBpmRecord('${key}')" class="text-rose-400 hover:underline">Verwijder</button>
+              <button onclick="deleteBpmRecord('${item.key}')" class="text-rose-400 hover:underline">Verwijder</button>
             </td>
           `;
           bpmHistoryTableBody.appendChild(row);
-
-          // Grafiekstaven voor BPM toevoegen aan het 'Grafieken' tabblad
-          const barGroup = document.createElement('div');
-          barGroup.className = "flex flex-col items-center h-full justify-end gap-1 flex-1";
-          
-          const sysVal = item.sys || parseInt(item.bp.split('/')[0]) || 120;
-          const diaVal = item.dia || parseInt(item.bp.split('/')[1]) || 80;
-          const hrVal = item.hr || 72;
-
-          const sysH = Math.min(Math.max((sysVal / 200) * 100, 10), 100);
-          const diaH = Math.min(Math.max((diaVal / 200) * 100, 10), 100);
-          const hrH = Math.min(Math.max((hrVal / 200) * 100, 10), 100);
-
-          barGroup.innerHTML = `
-            <div class="flex items-end gap-1 h-36 w-full justify-center">
-              <div style="height: ${sysH}%" class="w-2.5 bg-rose-500 rounded-t" title="Systolisch: ${sysVal}"></div>
-              <div style="height: ${diaH}%" class="w-2.5 bg-amber-500 rounded-t" title="Diastolisch: ${diaVal}"></div>
-              <div style="height: ${hrH}%" class="w-2.5 bg-sky-500 rounded-t" title="Hartslag: ${hrVal}"></div>
-            </div>
-            <span class="text-[9px] text-slate-500 truncate w-full text-center">${item.date.split(' ')[0]}</span>
-          `;
-          bpmChartContainer.appendChild(barGroup);
         });
+
+        drawBpmLineChart(records);
+      } else {
+        bpmLineChart.innerHTML = '<text x="250" y="100" fill="#64748b" text-anchor="middle" font-size="12">Geen metingen beschikbaar</text>';
       }
     });
+
+    function drawBpmLineChart(records) {
+      bpmLineChart.innerHTML = '';
+      const width = 500;
+      const height = 200;
+      const padding = 30;
+
+      if (records.length === 0) return;
+
+      const maxVal = 220; // Schaal tot 220 mmHg
+      const minVal = 30;
+
+      function getX(index) {
+        if (records.length === 1) return width / 2;
+        return padding + (index / (records.length - 1)) * (width - 2 * padding);
+      }
+
+      function getY(val) {
+        return height - padding - ((val - minVal) / (maxVal - minVal)) * (height - 2 * padding);
+      }
+
+      // Roosterlijnen
+      [50, 100, 150, 200].forEach(v => {
+        const y = getY(v);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', padding);
+        line.setAttribute('y1', y);
+        line.setAttribute('x2', width - padding);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', '#1e293b');
+        line.setAttribute('stroke-dasharray', '4');
+        bpmLineChart.appendChild(line);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', padding - 5);
+        text.setAttribute('y', y + 4);
+        text.setAttribute('fill', '#64748b');
+        text.setAttribute('font-size', '9');
+        text.setAttribute('text-anchor', 'end');
+        text.textContent = v;
+        bpmLineChart.appendChild(text);
+      });
+
+      let sysPoints = '';
+      let diaPoints = '';
+      let hrPoints = '';
+
+      records.forEach((item, index) => {
+        const x = getX(index);
+        const sys = item.sys || parseInt(item.bp.split('/')[0]) || 120;
+        const dia = item.dia || parseInt(item.bp.split('/')[1]) || 80;
+        const hr = item.hr || 72;
+
+        sysPoints += `${x},${getY(sys)} `;
+        diaPoints += `${x},${getY(dia)} `;
+        hrPoints += `${x},${getY(hr)} `;
+      });
+
+      // Lijnen tekenen
+      if (records.length > 1) {
+        const sysPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        sysPolyline.setAttribute('points', sysPoints.trim());
+        sysPolyline.setAttribute('fill', 'none');
+        sysPolyline.setAttribute('stroke', '#f43f5e'); // Rose
+        sysPolyline.setAttribute('stroke-width', '2.5');
+        bpmLineChart.appendChild(sysPolyline);
+
+        const diaPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        diaPolyline.setAttribute('points', diaPoints.trim());
+        diaPolyline.setAttribute('fill', 'none');
+        diaPolyline.setAttribute('stroke', '#f59e0b'); // Amber
+        diaPolyline.setAttribute('stroke-width', '2.5');
+        bpmLineChart.appendChild(diaPolyline);
+
+        const hrPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        hrPolyline.setAttribute('points', hrPoints.trim());
+        hrPolyline.setAttribute('fill', 'none');
+        hrPolyline.setAttribute('stroke', '#0ea5e9'); // Sky
+        hrPolyline.setAttribute('stroke-width', '2.5');
+        bpmLineChart.appendChild(hrPolyline);
+      }
+
+      // Punten tekenen
+      records.forEach((item, index) => {
+        const x = getX(index);
+        const sys = item.sys || parseInt(item.bp.split('/')[0]) || 120;
+        const dia = item.dia || parseInt(item.bp.split('/')[1]) || 80;
+        const hr = item.hr || 72;
+
+        [ {val: sys, color: '#f43f5e'}, {val: dia, color: '#f59e0b'}, {val: hr, color: '#0ea5e9'} ].forEach(p => {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', x);
+          circle.setAttribute('cy', getY(p.val));
+          circle.setAttribute('r', '3.5');
+          circle.setAttribute('fill', p.color);
+          bpmLineChart.appendChild(circle);
+        });
+      });
+    }
 
     // --- UF POPUP TOETSENBORD LOGICA ---
     const ufPopup = document.getElementById('ufPopup');
