@@ -19,7 +19,6 @@
 
   <style>
     body { overscroll-behavior: none; user-select: none; }
-    /* Nachtmodus dimming overlay */
     #dimmer { position: fixed; inset: 0; background: black; pointer-events: none; opacity: 0; z-index: 9999; transition: opacity 0.3s; }
   </style>
 </head>
@@ -54,11 +53,11 @@
   <!-- Main Container -->
   <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 overflow-y-auto">
     
-    <!-- Kolom 1: Countdown & Sessie -->
+    <!-- Kolom 1: Live Countdown & Sessie -->
     <div class="flex flex-col gap-4">
       <!-- Countdown Kaart -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col items-center text-center shadow-lg">
-        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">⏱️ Live Dialyse Countdown</h2>
+        <h2 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">⏱️ Live Dialyse Countdown (Multi-device)</h2>
         <div id="countdownTimer" class="text-5xl font-extrabold text-sky-400 tracking-widest my-2">08:00:00</div>
         <div class="flex gap-2 mt-3 w-full">
           <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold transition">Start</button>
@@ -81,7 +80,7 @@
           </div>
         </div>
         <div class="text-xs text-slate-500 mt-4 text-center">
-          Ontworpen voor ononderbroken nachtdialyse op Lenovo M10 & P12 tablets.
+          Volledig gesynchroniseerd tussen M10, P12 en al je andere schermen.
         </div>
       </div>
     </div>
@@ -238,84 +237,4 @@
       ufResultCard.className = "mt-auto p-5 rounded-2xl border transition-all text-center ";
       if (ufNum >= 4.5) {
         ufResultCard.classList.add('bg-rose-500/10', 'border-rose-500/30');
-        ufValueEl.className = "text-4xl font-extrabold text-rose-400 mb-2";
-        ufTrafficLabel.className = "text-sm font-bold text-rose-300";
-        ufTrafficLabel.innerText = "Let op: Zeer hoog UF advies (>= 4.5 kg) 🔴";
-      } else if (ufNum >= 4.0) {
-        ufResultCard.classList.add('bg-amber-500/10', 'border-amber-500/30');
-        ufValueEl.className = "text-4xl font-extrabold text-amber-400 mb-2";
-        ufTrafficLabel.className = "text-sm font-bold text-amber-300";
-        ufTrafficLabel.innerText = "Waarschuwing: Verhoogd UF advies (>= 4.0 kg) 🟠";
-      } else {
-        ufResultCard.classList.add('bg-emerald-500/10', 'border-emerald-500/30');
-        ufValueEl.className = "text-4xl font-extrabold text-emerald-400 mb-2";
-        ufTrafficLabel.className = "text-sm font-bold text-emerald-300";
-        ufTrafficLabel.innerText = "Normaal / Goed (< 4.0 kg) 🟢";
-      }
-
-      if (syncToFirebase) {
-        sessionRef.update({ preWeight: pre, dryWeight: dry, uf: uf });
-      }
-    }
-
-    preWeightInput.oninput = () => berekenUF(true);
-    dryWeightInput.oninput = () => berekenUF(true);
-
-    // Luister naar data-updates van andere tablets
-    sessionRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        if (data.preWeight && data.preWeight != preWeightInput.value) {
-          preWeightInput.value = data.preWeight;
-          berekenUF(false);
-        }
-        if (data.dryWeight && data.dryWeight != dryWeightInput.value) {
-          dryWeightInput.value = data.dryWeight;
-          berekenUF(false);
-        }
-      }
-    });
-
-    // --- COUNTDOWN TIMER ---
-    let timerInterval = null;
-    let timeLeft = 8 * 3600;
-    const timerDisplay = document.getElementById('countdownTimer');
-
-    function updateTimerDisplay() {
-      const hours = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
-      const minutes = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
-      const seconds = (timeLeft % 60).toString().padStart(2, '0');
-      timerDisplay.innerText = `${hours}:${minutes}:${seconds}`;
-    }
-
-    document.getElementById('startTimer').onclick = () => {
-      if (timerInterval) return;
-      timerInterval = setInterval(() => {
-        if (timeLeft > 0) {
-          timeLeft--;
-          updateTimerDisplay();
-        } else {
-          clearInterval(timerInterval);
-          timerInterval = null;
-          alert('Dialysetijd afgelopen!');
-        }
-      }, 1000);
-    };
-
-    document.getElementById('pauseTimer').onclick = () => {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    };
-
-    document.getElementById('resetTimer').onclick = () => {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      timeLeft = 8 * 3600;
-      updateTimerDisplay();
-    };
-
-    updateTimerDisplay();
-    berekenUF(false);
-  </script>
-</body>
-</html>
+        ufValueEl.
