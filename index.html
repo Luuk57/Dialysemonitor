@@ -266,17 +266,17 @@
 
   </main>
 
-  <!-- ==================== POPUP: INGESTELDE UF INSTELLEN (4 KOLOMMEN TOETSENBORD) ==================== -->
+  <!-- ==================== POPUP: INGESTELDE UF (4 KOLOMMEN STIJL ZOALS VOORBEELD) ==================== -->
   <div id="ufPopup" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50">
     <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl w-80 text-center shadow-2xl flex flex-col gap-4">
-      <h3 class="text-sky-400 font-bold text-base">Invoer Ingestelde UF (ml)</h3>
+      <h3 class="text-sky-400 font-bold text-base">Instellen Ingestelde UF (ml)</h3>
       
-      <!-- Display van ingevoerde waarde -->
+      <!-- Huidige waarde bovenin -->
       <div id="popupUfDisplay" class="bg-slate-950 border border-slate-700 rounded-2xl py-3 text-3xl font-extrabold text-sky-400 tracking-wider">
         3800
       </div>
 
-      <!-- Numeriek Toetsenbord in 4 kolommen -->
+      <!-- Numeriek Toetsenbord in 4 kolommen met 1 t/m 9, 0 en groene OK knop -->
       <div class="grid grid-cols-4 gap-2">
         <button onclick="pressUfKey('1')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">1</button>
         <button onclick="pressUfKey('2')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">2</button>
@@ -291,14 +291,14 @@
         <button onclick="pressUfKey('7')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">7</button>
         <button onclick="pressUfKey('8')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">8</button>
         <button onclick="pressUfKey('9')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">9</button>
-        <button onclick="pressUfKey('0')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer col-start-2">0</button>
+        <button onclick="pressUfKey('0')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">0</button>
+
+        <!-- Grote groene OK knop onderaan over de hele breedte zoals in het voorbeeld -->
+        <button id="saveUfPopup" class="col-span-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl transition cursor-pointer text-base shadow-lg shadow-emerald-900/30">ok</button>
       </div>
 
-      <!-- Actieknoppen Popup -->
-      <div class="flex gap-2 mt-2">
-        <button id="closeUfPopup" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-bold transition cursor-pointer text-sm">Annuleer</button>
-        <button id="saveUfPopup" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold transition cursor-pointer text-sm">Opslaan</button>
-      </div>
+      <!-- Annuleer knop -->
+      <button id="closeUfPopup" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-xl font-bold transition cursor-pointer text-xs">Annuleer</button>
     </div>
   </div>
 
@@ -482,7 +482,7 @@
       updateDashboardValues();
       ufPopup.style.display = 'none';
 
-      // Synchroniseer met tabblad gewicht en Firebase
+      // Synchroniseer direct met gewicht tabblad én Firebase
       sessionRef.update({ setUf: finalVal });
     };
 
