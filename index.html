@@ -61,7 +61,7 @@
       
       <!-- Instelling & Invoer Kaart -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
-        <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">⚖️ Gewicht & UF (in ml)</h2>
+        <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">⚖️ Gewicht & UF Berekening (in ml)</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -78,7 +78,7 @@
           </div>
         </div>
 
-        <!-- Automatisch Advies + Ingestelde UF + Werkelijke UF -->
+        <!-- Advies + Ingestelde UF + Automatische Werkelijke UF (Pre - Post) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800 items-center">
           <div>
             <div class="text-[11px] font-bold uppercase text-slate-400">Berekend UF Advies</div>
@@ -86,12 +86,13 @@
             <div id="ufTrafficLabel" class="text-[10px] text-emerald-400 font-semibold">Normaal (< 4000 ml) 🟢</div>
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-sky-400 mb-1">Ingestelde UF (ml)</label>
+            <label class="block text-[11px] font-semibold text-sky-400 mb-1">Ingestelde UF (ml) (Aanpasbaar)</label>
             <input type="number" id="setUfInput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm font-bold text-center text-sky-300 outline-none focus:ring-2 focus:ring-sky-500" placeholder="3800">
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-amber-400 mb-1">Werkelijke UF (ml)</label>
-            <input type="number" id="actualUfInput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm font-bold text-center text-amber-300 outline-none focus:ring-2 focus:ring-amber-500" placeholder="3750">
+            <div class="text-[11px] font-bold uppercase text-amber-400">Werkelijke UF (Pre - Post)</div>
+            <div id="actualUfDisplay" class="text-xl font-extrabold text-amber-400">3300 ml</div>
+            <div class="text-[10px] text-slate-500">Automatisch berekend</div>
           </div>
         </div>
 
@@ -110,7 +111,7 @@
                 <th class="py-2 px-1">Na</th>
                 <th class="py-2 px-1">Advies</th>
                 <th class="py-2 px-1">Ingesteld</th>
-                <th class="py-2 px-1">Werkelijk</th>
+                <th class="py-2 px-1">Werkelijk (Pre-Post)</th>
                 <th class="py-2 px-1 text-right">Acties</th>
               </tr>
             </thead>
@@ -307,7 +308,7 @@
     const overviewUF = document.getElementById('overviewUF');
     const ufTrafficLabel = document.getElementById('ufTrafficLabel');
     const setUfInput = document.getElementById('setUfInput');
-    const actualUfInput = document.getElementById('actualUfInput');
+    const actualUfDisplay = document.getElementById('actualUfDisplay');
 
     let userModifiedSetUf = false;
     setUfInput.oninput = () => { userModifiedSetUf = true; };
@@ -315,15 +316,19 @@
     function berekenUF(syncToFirebase = true) {
       const dry = parseFloat(dryWeightInput.value) || 109.0;
       const pre = parseFloat(preWeightInput.value) || 0;
+      const post = parseFloat(postWeightInput.value) || 0;
       
-      // Formule in kg, daarna omrekenen naar ml (* 1000)
+      // Berekend UF advies: (pre - dry + 0.3) in ml
       const ufKg = (pre - dry + 0.3);
       const ufMl = Math.round(ufKg * 1000);
 
       ufValueEl.innerText = ufMl + ' ml';
       overviewUF.innerText = ufMl + ' ml';
 
-      // Als de gebruiker de ingestelde UF niet handmatig heeft overschreven, neem automatisch over
+      // Automatische Werkelijke UF op basis van Pre - Post in ml
+      const actualUfMl = Math.round((pre - post) * 1000);
+      actualUfDisplay.innerText = (pre > 0 && post > 0) ? actualUfMl + ' ml' : '0 ml';
+
       if (!userModifiedSetUf) {
         setUfInput.value = ufMl;
       }
@@ -344,10 +349,10 @@
         sessionRef.update({
           dryWeight: dry,
           preWeight: pre,
-          postWeight: parseFloat(postWeightInput.value) || 0,
+          postWeight: post,
           calculatedUf: ufMl,
           setUf: setUfInput.value,
-          actualUf: actualUfInput.value
+          actualUf: (pre > 0 && post > 0) ? actualUfMl : 0
         });
       }
     }
@@ -355,17 +360,16 @@
     dryWeightInput.oninput = () => berekenUF(true);
     preWeightInput.oninput = () => berekenUF(true);
     postWeightInput.oninput = () => berekenUF(true);
-    actualUfInput.oninput = () => {
-      if (syncToFirebase = true) {
-        sessionRef.update({ actualUf: actualUfInput.value });
-      }
-    };
 
     // --- OPSLAAN, BEWERKEN & VERWIJDEREN VAN SESSIES ---
     const historyTableBody = document.getElementById('historyTableBody');
     const chartContainer = document.getElementById('chartContainer');
 
     document.getElementById('saveSessionBtn').onclick = () => {
+      const pre = parseFloat(preWeightInput.value) || 0;
+      const post = parseFloat(postWeightInput.value) || 0;
+      const actualUfMl = Math.round((pre - post) * 1000);
+
       const newSession = {
         date: new Date().toLocaleDateString('nl-NL') + ' ' + new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'}),
         dry: dryWeightInput.value,
@@ -373,7 +377,7 @@
         post: postWeightInput.value,
         calculatedUf: ufValueEl.innerText,
         setUf: setUfInput.value ? setUfInput.value + ' ml' : '-',
-        actualUf: actualUfInput.value ? actualUfInput.value + ' ml' : '-'
+        actualUf: (pre > 0 && post > 0) ? actualUfMl + ' ml' : '-'
       };
       historyRef.push(newSession);
       alert('Sessie met succes opgeslagen!');
@@ -385,21 +389,22 @@
       }
     };
 
-    window.editSession = function(key, pre, post, setUf, actualUf) {
+    window.editSession = function(key, pre, post, setUf) {
       const newPre = prompt('Pas pre-gewicht aan (kg):', pre);
       const newPost = prompt('Pas post-gewicht aan (kg):', post);
       const newSetUf = prompt('Pas ingestelde UF aan (ml):', setUf);
-      const newActualUf = prompt('Pas werkelijke UF aan (ml):', actualUf);
 
       if (newPre !== null && newPost !== null) {
         const dry = parseFloat(dryWeightInput.value) || 109.0;
         const calcMl = Math.round((parseFloat(newPre) - dry + 0.3) * 1000) + ' ml';
+        const actMl = Math.round((parseFloat(newPre) - parseFloat(newPost)) * 1000) + ' ml';
+
         historyRef.child(key).update({
           pre: newPre,
           post: newPost,
           calculatedUf: calcMl,
           setUf: newSetUf,
-          actualUf: newActualUf
+          actualUf: actMl
         });
       }
     };
@@ -424,7 +429,7 @@
             <td class="py-2 px-1 text-sky-300">${item.setUf || '-'}</td>
             <td class="py-2 px-1 font-bold text-amber-400">${item.actualUf || '-'}</td>
             <td class="py-2 px-1 text-right space-x-1">
-              <button onclick="editSession('${key}', '${item.pre}', '${item.post}', '${item.setUf || ''}', '${item.actualUf || ''}')" class="text-sky-400 hover:underline">Bewerk</button>
+              <button onclick="editSession('${key}', '${item.pre}', '${item.post}', '${item.setUf || ''}')" class="text-sky-400 hover:underline">Bewerk</button>
               <button onclick="deleteSession('${key}')" class="text-rose-400 hover:underline">Verwijder</button>
             </td>
           `;
@@ -500,7 +505,6 @@
         if (data.preWeight && data.preWeight != preWeightInput.value) { preWeightInput.value = data.preWeight; }
         if (data.postWeight && data.postWeight != postWeightInput.value) { postWeightInput.value = data.postWeight; }
         if (data.setUf && data.setUf != setUfInput.value) { setUfInput.value = data.setUf; userModifiedSetUf = true; }
-        if (data.actualUf && data.actualUf != actualUfInput.value) { actualUfInput.value = data.actualUf; }
         berekenUF(false);
 
         if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
