@@ -155,7 +155,7 @@
             </div>
             <div>
               <span class="text-slate-400 font-semibold block mb-0.5">UF / U (Uurlijks)</span>
-              <div id="panelUfPerHour" class="text-lg font-extrabold text-amber-400">475 ml/u</div>
+              <div id="panelUfPerHour" class="text-lg font-extrabold text-amber-400">950 ml/u</div>
             </div>
             <div>
               <div class="flex justify-between font-semibold mb-1">
@@ -266,17 +266,15 @@
 
   </main>
 
-  <!-- ==================== POPUP: INGESTELDE UF (4 KOLOMMEN STIJL ZOALS VOORBEELD) ==================== -->
+  <!-- ==================== POPUP: INGESTELDE UF ==================== -->
   <div id="ufPopup" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50">
     <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl w-80 text-center shadow-2xl flex flex-col gap-4">
       <h3 class="text-sky-400 font-bold text-base">Instellen Ingestelde UF (ml)</h3>
       
-      <!-- Huidige waarde bovenin -->
       <div id="popupUfDisplay" class="bg-slate-950 border border-slate-700 rounded-2xl py-3 text-3xl font-extrabold text-sky-400 tracking-wider">
         3800
       </div>
 
-      <!-- Numeriek Toetsenbord in 4 kolommen met 1 t/m 9, 0 en groene OK knop -->
       <div class="grid grid-cols-4 gap-2">
         <button onclick="pressUfKey('1')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">1</button>
         <button onclick="pressUfKey('2')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">2</button>
@@ -293,11 +291,9 @@
         <button onclick="pressUfKey('9')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">9</button>
         <button onclick="pressUfKey('0')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl text-lg cursor-pointer">0</button>
 
-        <!-- Grote groene OK knop onderaan over de hele breedte zoals in het voorbeeld -->
         <button id="saveUfPopup" class="col-span-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl transition cursor-pointer text-base shadow-lg shadow-emerald-900/30">ok</button>
       </div>
 
-      <!-- Annuleer knop -->
       <button id="closeUfPopup" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-xl font-bold transition cursor-pointer text-xs">Annuleer</button>
     </div>
   </div>
@@ -482,7 +478,6 @@
       updateDashboardValues();
       ufPopup.style.display = 'none';
 
-      // Synchroniseer direct met gewicht tabblad én Firebase
       sessionRef.update({ setUf: finalVal });
     };
 
@@ -502,8 +497,9 @@
       const setUfVal = parseFloat(setUfInput.value) || 3800;
       panelSetUf.innerText = setUfVal + ' ml';
       
-      const durationHours = totalDurationSec / 3600;
-      const ufPerHour = durationHours > 0 ? Math.round(setUfVal / durationHours) : Math.round(setUfVal / 4);
+      // Direct herberekenen op basis van de werkelijke totale duur in uren
+      const durationHours = totalDurationSec > 0 ? totalDurationSec / 3600 : 4;
+      const ufPerHour = durationHours > 0 ? Math.round(setUfVal / durationHours) : 0;
       panelUfPerHour.innerText = ufPerHour + ' ml/u';
     }
 
@@ -733,6 +729,14 @@
       }
       updateDashboardValues();
       updateTimerDisplay();
+
+      // Synchroniseer tijdswijzigingen direct via Firebase
+      sessionRef.update({
+        startTimeStr: startTimeInput.value,
+        endTimeStr: endTimeInput.value,
+        totalDuration: totalDurationSec,
+        timeLeft: timeLeft
+      });
     }
 
     startTimeInput.onchange = recalculateTimes;
@@ -791,20 +795,23 @@
           panelBp.innerText = data.bp + ' mmHg';
         }
 
+        if (data.startTimeStr && data.startTimeStr != startTimeInput.value) { startTimeInput.value = data.startTimeStr; }
+        if (data.endTimeStr && data.endTimeStr != endTimeInput.value) { endTimeInput.value = data.endTimeStr; }
+        if (data.totalDuration && data.totalDuration != totalDurationSec) { 
+          totalDurationSec = data.totalDuration; 
+        }
+
         berekenUF(false);
 
         if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
         if (data.startTime) { startTimeEpoch = data.startTime; } else { startTimeEpoch = null; }
-        if (data.startTimeStr && data.startTimeStr != startTimeInput.value) { startTimeInput.value = data.startTimeStr; }
-        if (data.endTimeStr && data.endTimeStr != endTimeInput.value) { endTimeInput.value = data.endTimeStr; }
-        if (data.totalDuration) { 
-          totalDurationSec = data.totalDuration; 
-        }
 
         if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
           timeLeft = data.timeLeft;
-          updateTimerDisplay();
         }
+
+        updateDashboardValues();
+        updateTimerDisplay();
       }
     });
 
