@@ -635,7 +635,7 @@
         dryWeightInput.value = patient.dryWeight;
         berekenUF(true);
 
-        // PIN-code direct wissen uit het invoerveld ter beveiliging
+        // PIN-code direct wissen ter beveiliging
         modalPatientPin.value = '';
 
         loggedInUserBox.classList.remove('hidden');
@@ -1182,11 +1182,10 @@
       }
     };
 
-    // --- LED KLOK & TIMER ---
+    // --- LED KLOK & TIMER (Gekoppeld aan Firebase voor real-time synchronisatie) ---
     let totalDurationSec = 4 * 3600;
-    let timeLeft = sessionStorage.getItem('savedTimeLeft') ? parseInt(sessionStorage.getItem('savedTimeLeft')) : totalDurationSec;
-    let isRunning = sessionStorage.getItem('savedIsRunning') === 'true';
-    let startTimeEpoch = null;
+    let timeLeft = totalDurationSec;
+    let isRunning = false;
     let customStartTimeStr = "08:00";
     let customEndTimeStr = "12:00";
 
@@ -1249,65 +1248,52 @@
       totalDurationSec = Math.floor((endD.getTime() - startD.getTime()) / 1000);
       if (totalDurationSec <= 0) totalDurationSec = 4 * 3600;
 
-      if (!isRunning && startTimeEpoch === null && !sessionStorage.getItem('savedTimeLeft')) {
-        timeLeft = totalDurationSec;
-      }
       updateDashboardValues();
       updateTimerDisplay();
-
-      sessionRef.update({
-        startTimeStr: startTimeInput.value,
-        endTimeStr: endTimeInput.value,
-        totalDuration: totalDurationSec,
-        timeLeft: timeLeft
-      });
     }
 
-    startTimeInput.onchange = recalculateTimes;
-    endTimeInput.onchange = recalculateTimes;
+    startTimeInput.onchange = () => {
+      recalculateTimes();
+      sessionRef.update({ startTimeStr: startTimeInput.value, totalDuration: totalDurationSec });
+    };
 
+    endTimeInput.onchange = () => {
+      recalculateTimes();
+      sessionRef.update({ endTimeStr: endTimeInput.value, totalDuration: totalDurationSec });
+    };
+
+    // Lokale aftel-loop
     setInterval(() => {
       if (isRunning && timeLeft > 0) {
         timeLeft--;
-        sessionStorage.setItem('savedTimeLeft', timeLeft);
-        sessionStorage.setItem('savedIsRunning', isRunning);
         updateTimerDisplay();
       }
     }, 1000);
 
     document.getElementById('startTimer').onclick = () => {
       isRunning = true;
-      sessionStorage.setItem('savedIsRunning', true);
-      if (!startTimeEpoch) {
-        startTimeEpoch = Date.now();
-      }
       sessionRef.update({ 
         isRunning: true, 
-        timeLeft: timeLeft, 
-        startTime: startTimeEpoch, 
         startTimeStr: startTimeInput.value,
         endTimeStr: endTimeInput.value,
-        totalDuration: totalDurationSec
+        totalDuration: totalDurationSec,
+        serverTime: firebase.database.ServerValue.TIMESTAMP
       });
     };
 
     document.getElementById('pauseTimer').onclick = () => {
       isRunning = false;
-      sessionStorage.setItem('savedIsRunning', false);
       sessionRef.update({ isRunning: false, timeLeft: timeLeft });
     };
 
     document.getElementById('resetTimer').onclick = () => {
       isRunning = false;
-      startTimeEpoch = null;
-      sessionStorage.removeItem('savedTimeLeft');
-      sessionStorage.removeItem('savedIsRunning');
-      recalculateTimes();
+      timeLeft = totalDurationSec;
       updateTimerDisplay();
-      sessionRef.update({ isRunning: false, timeLeft: totalDurationSec, startTime: null });
+      sessionRef.update({ isRunning: false, timeLeft: totalDurationSec });
     };
 
-    // --- LIVE FIREBASE LUISTERSTROOM ---
+    // --- LIVE FIREBASE LUISTERSTROOM VOOR TIMER & SESSIE ---
     sessionRef.on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -1332,9 +1318,11 @@
 
         berekenUF(false);
 
-        if (!sessionStorage.getItem('savedTimeLeft')) {
-          if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
-          if (typeof data.timeLeft === 'number') { timeLeft = data.timeLeft; }
+        if (typeof data.isRunning === 'boolean') {
+          isRunning = data.isRunning;
+        }
+        if (typeof data.timeLeft === 'number') {
+          timeLeft = data.timeLeft;
         }
 
         updateDashboardValues();
