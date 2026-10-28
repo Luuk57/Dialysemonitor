@@ -635,7 +635,13 @@
         dryWeightInput.value = patient.dryWeight;
         berekenUF(true);
 
-        // PIN direct wissen uit het invoerveld
+        // Stuur patiëntnaam en drooggewicht direct mee naar Firebase voor de monitor
+        sessionRef.update({
+          patientName: patient.name,
+          dryWeight: patient.dryWeight
+        });
+
+        // PIN direct wissen ter beveiliging
         modalPatientPin.value = '';
 
         loggedInUserBox.classList.remove('hidden');
@@ -656,6 +662,10 @@
       loginFormBox.classList.remove('hidden');
       loginPatientSelect.value = "";
       modalPatientPin.value = "";
+      
+      // Reset ook patiëntnaam in database
+      sessionRef.update({ patientName: "Niet ingelogd" });
+
       alert('Succesvol uitgelogd.');
       loginModal.style.display = 'none';
     };
@@ -1278,7 +1288,6 @@
       sessionRef.update({ endTimeStr: endTimeInput.value, totalDuration: totalDurationSec });
     };
 
-    // Strakke weergave loop (elke 200ms voor vloeiende weergave op alle schermen)
     setInterval(() => {
       renderTimer();
     }, 200);
