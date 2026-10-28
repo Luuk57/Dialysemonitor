@@ -78,7 +78,6 @@
           </div>
         </div>
 
-        <!-- Advies + Ingestelde UF + Automatische Werkelijke UF (Pre - Post) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800 items-center">
           <div>
             <div class="text-[11px] font-bold uppercase text-slate-400">Berekend UF Advies</div>
@@ -103,7 +102,6 @@
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-2 gap-2">
           <h3 class="text-sky-400 font-bold text-sm">📋 Overzicht Eerdere Dialyses</h3>
-          <!-- Statistieken Balk -->
           <div class="flex gap-2 text-[11px]">
             <span class="bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">Hoog: <strong id="statHigh" class="text-sky-400">-</strong></span>
             <span class="bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">Laag: <strong id="statLow" class="text-emerald-400">-</strong></span>
@@ -124,9 +122,7 @@
                 <th class="py-2 px-1 text-right">Acties</th>
               </tr>
             </thead>
-            <tbody id="historyTableBody">
-              <!-- Dynamisch gevuld -->
-            </tbody>
+            <tbody id="historyTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -136,9 +132,7 @@
     <div id="tab-uf" class="tab-pane flex-col gap-4 w-full max-w-2xl mx-auto pb-6">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">📈 Grafiek Gewichtsverloop (Voor & Na)</h2>
-        <div id="chartContainer" class="bg-slate-950 p-4 rounded-xl border border-slate-800 h-64 flex items-end gap-2 justify-around">
-          <!-- Wordt dynamisch gevuld -->
-        </div>
+        <div id="chartContainer" class="bg-slate-950 p-4 rounded-xl border border-slate-800 h-64 flex items-end gap-2 justify-around"></div>
         <div class="flex justify-center gap-4 text-xs text-slate-400">
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-sky-500 rounded"></span> Pre-gewicht</span>
           <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-500 rounded"></span> Na-gewicht</span>
@@ -146,15 +140,33 @@
       </div>
     </div>
 
-    <!-- TAB 3: TIJD & COUNTDOWN -->
-    <div id="tab-tijd" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center shadow-lg">
-        <h2 class="text-sky-400 font-bold text-lg mb-4">⏱️ Live Dialyse Countdown</h2>
-        <div id="countdownTimer" class="text-6xl font-extrabold text-sky-400 tracking-widest my-4">08:00:00</div>
-        <div class="flex gap-3 mt-4 w-full">
-          <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold transition cursor-pointer">Start</button>
-          <button id="pauseTimer" class="flex-1 bg-amber-600 hover:bg-amber-500 py-3 rounded-xl font-bold transition cursor-pointer">Pauze</button>
-          <button id="resetTimer" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold transition cursor-pointer">Reset</button>
+    <!-- TAB 3: RONDE VOORTGANGSKLOK -->
+    <div id="tab-tijd" class="tab-pane flex-col gap-4 w-full max-w-md mx-auto justify-center items-center h-full">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 flex flex-col items-center text-center shadow-2xl w-full">
+        <h2 class="text-sky-400 font-bold text-base mb-4">⏱️ Live Voortgangsring</h2>
+        
+        <!-- Ronde Klok met Dikke Kleurende Rand -->
+        <div class="relative w-64 h-64 flex items-center justify-center my-2">
+          <!-- SVG Cirkel voor dynamische border (Geel -> Groen) -->
+          <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <!-- Achtergrond cirkel rand -->
+            <circle cx="50" cy="50" r="44" stroke="#1e293b" stroke-width="8" fill="none"></circle>
+            <!-- Voortgangsring (kleur dynamisch via JS) -->
+            <circle id="progressRing" cx="50" cy="50" r="44" stroke="#eab308" stroke-width="8" fill="none" stroke-dasharray="276.46" stroke-dashoffset="276.46" stroke-linecap="round" class="transition-all duration-1000"></circle>
+          </svg>
+
+          <!-- Digitale Tijd in het Centrum -->
+          <div class="flex flex-col items-center z-10">
+            <div id="countdownTimer" class="text-4xl font-extrabold text-sky-400 tracking-wider">08:00:00</div>
+            <div id="progressPercentage" class="text-xs font-bold text-slate-400 mt-1">0% verstreken</div>
+          </div>
+        </div>
+
+        <!-- Timer Bedieningsknoppen -->
+        <div class="flex gap-2 mt-6 w-full">
+          <button id="startTimer" class="flex-1 bg-emerald-600 hover:bg-emerald-500 py-2.5 rounded-xl font-bold transition cursor-pointer text-sm">Start</button>
+          <button id="pauseTimer" class="flex-1 bg-amber-600 hover:bg-amber-500 py-2.5 rounded-xl font-bold transition cursor-pointer text-sm">Pauze</button>
+          <button id="resetTimer" class="flex-1 bg-slate-700 hover:bg-slate-600 py-2.5 rounded-xl font-bold transition cursor-pointer text-sm">Reset</button>
         </div>
       </div>
     </div>
@@ -434,7 +446,6 @@
           if (item.pre) weights.push(parseFloat(item.pre));
           if (item.post) weights.push(parseFloat(item.post));
 
-          // Tabel vullen
           const row = document.createElement('tr');
           row.className = "border-b border-slate-900 hover:bg-slate-900/50";
           row.innerHTML = `
@@ -451,7 +462,6 @@
           `;
           historyTableBody.appendChild(row);
 
-          // Grafiek balkjes vullen
           const barGroup = document.createElement('div');
           barGroup.className = "flex flex-col items-center h-full justify-end gap-1 flex-1";
           
@@ -469,19 +479,10 @@
           chartContainer.appendChild(barGroup);
         });
 
-        // Bereken statistieken (Hoog, Laag, Gemiddeld)
         if (weights.length > 0) {
-          const maxVal = Math.max(...weights);
-          const minVal = Math.min(...weights);
-          const avgVal = (weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1);
-
-          statHigh.innerText = maxVal + ' kg';
-          statLow.innerText = minVal + ' kg';
-          statAvg.innerText = avgVal + ' kg';
-        } else {
-          statHigh.innerText = '-';
-          statLow.innerText = '-';
-          statAvg.innerText = '-';
+          statHigh.innerText = Math.max(...weights) + ' kg';
+          statLow.innerText = Math.min(...weights) + ' kg';
+          statAvg.innerText = (weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1) + ' kg';
         }
       } else {
         statHigh.innerText = '-';
@@ -490,12 +491,18 @@
       }
     });
 
-    // --- COUNTDOWN TIMER ---
-    let timeLeft = 8 * 3600;
+    // --- RONDE VOORTGANGSKLOK & TIMER ---
+    const TOTAL_TIME = 8 * 3600; // 8 uur basis
+    let timeLeft = TOTAL_TIME;
     let isRunning = false;
+    
     const timerDisplay = document.getElementById('countdownTimer');
     const topCountdown = document.getElementById('topCountdown');
     const overviewTime = document.getElementById('overviewTime');
+    const progressRing = document.getElementById('progressRing');
+    const progressPercentage = document.getElementById('progressPercentage');
+
+    const circumference = 2 * Math.PI * 44; // Ongeveer 276.46
 
     function updateTimerDisplay() {
       const hours = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
@@ -506,6 +513,27 @@
       timerDisplay.innerText = timeStr;
       topCountdown.innerText = timeStr;
       overviewTime.innerText = timeStr;
+
+      // Bereken verstreken percentage
+      const elapsed = TOTAL_TIME - timeLeft;
+      const progress = Math.min(Math.max(elapsed / TOTAL_TIME, 0), 1);
+      const percent = Math.round(progress * 100);
+
+      progressPercentage.innerText = percent + '% verstreken';
+
+      // Rand animatie: offset aanpassen
+      const dashOffset = circumference * (1 - progress);
+      progressRing.style.strokeDashoffset = dashOffset;
+
+      // Kleurverloop: van Geel (0%) naar Groen (100%)
+      // We mengen geleidelijk van #eab308 naar #10b981
+      if (percent < 50) {
+        progressRing.style.stroke = '#eab308'; // Geel
+      } else if (percent < 80) {
+        progressRing.style.stroke = '#84cc16'; // Lichtgroen / Geelgroen
+      } else {
+        progressRing.style.stroke = '#10b981'; // Diepgroen
+      }
     }
 
     setInterval(() => {
@@ -527,7 +555,7 @@
 
     document.getElementById('resetTimer').onclick = () => {
       isRunning = false;
-      timeLeft = 8 * 3600;
+      timeLeft = TOTAL_TIME;
       updateTimerDisplay();
       sessionRef.update({ isRunning: false, timeLeft: timeLeft });
     };
