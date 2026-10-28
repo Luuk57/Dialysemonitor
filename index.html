@@ -55,12 +55,19 @@
       <button id="refreshBtn" class="bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-xl text-xs font-semibold transition cursor-pointer border border-slate-700" title="Pagina Vernieuwen">🔄</button>
     </div>
     
-    <div class="flex items-center gap-3 text-sm">
+    <div class="flex items-center gap-2.5 text-sm">
+      <!-- Inlogknop voor Patiëntenmenu -->
+      <button id="openLoginMenuBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow">
+        👤 <span id="headerLoginText">Inloggen</span>
+      </button>
+
       <div class="hidden md:flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-xl border border-slate-700 text-xs">
         <span>🌙 Dim:</span>
         <input type="range" id="brightnessRange" min="0" max="80" value="0" class="w-16 accent-sky-400 cursor-pointer">
       </div>
-      <button id="fullscreenBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer">⛶ Full</button>
+
+      <!-- Kiosk Mode / Fullscreen Knop -->
+      <button id="kioskBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer shadow">⛶ Kiosk</button>
       <button id="lockBtn" class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer">🔒 Slot</button>
     </div>
   </header>
@@ -221,7 +228,7 @@
             </div>
             <div>
               <span class="text-slate-400 font-semibold block mb-0.5">Actieve Patiënt</span>
-              <div id="activePatientDisplay" class="text-base font-extrabold text-emerald-400 truncate">Thuisdialyse Patiënt</div>
+              <div id="activePatientDisplay" class="text-base font-extrabold text-emerald-400 truncate">Niet ingelogd</div>
             </div>
           </div>
 
@@ -298,20 +305,12 @@
       </div>
     </div>
 
-    <!-- TAB 5: PATIENTENBEHEER & INLOG -->
+    <!-- TAB 5: PATIENTENBEHEER -->
     <div id="tab-patient" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto pb-6">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
-        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">👤 Patiënt Beheer & Toegang</h2>
+        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">👤 Patiënt Beheer & PIN</h2>
         
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
-          <span class="text-xs font-bold text-sky-400">Actieve Patiënt Ontgrendelen met PIN</span>
-          <div class="flex gap-2">
-            <input type="password" id="loginPatientPin" maxlength="6" placeholder="Voer patiënt PIN in" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-center tracking-widest outline-none">
-            <button id="loginPatientBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">Laad Patiënt</button>
-          </div>
-        </div>
-
-        <div class="border-t border-slate-800 pt-3 flex flex-col gap-3">
+        <div class="flex flex-col gap-3">
           <span class="text-xs font-bold text-emerald-400">Nieuwe Patiënt Invoeren</span>
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1">Patiënt Naam</label>
@@ -331,7 +330,7 @@
         </div>
 
         <div class="border-t border-slate-800 pt-3 flex flex-col gap-2">
-          <span class="text-xs font-bold text-rose-400">Patiënt Afvoeren (Verwijderen)</span>
+          <span class="text-xs font-bold text-rose-400">Patiënt Afvoeren (Verwijderen op PIN)</span>
           <div class="flex gap-2">
             <input type="password" id="deletePatientPin" maxlength="6" placeholder="PIN van patiënt om af te voeren" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-center tracking-widest outline-none">
             <button id="deletePatientBtn" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer">Afvoeren</button>
@@ -340,7 +339,7 @@
       </div>
     </div>
 
-    <!-- TAB 6: OVERZICHT (Met Datumperiode Filter & PDF Print) -->
+    <!-- TAB 6: OVERZICHT -->
     <div id="tab-overzicht" class="tab-pane flex-col gap-4 w-full max-w-4xl mx-auto pb-6">
       <div id="printArea" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4 w-full">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-3 gap-3">
@@ -353,7 +352,6 @@
           </button>
         </div>
 
-        <!-- Datumperiode Filter (Alleen zichtbaar op scherm, niet op de print) -->
         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-3 no-print">
           <div>
             <label class="block text-[11px] font-semibold text-slate-400 mb-1">Startdatum</label>
@@ -385,6 +383,35 @@
     </div>
 
   </main>
+
+  <!-- ==================== POPUP: INLOGGEN / PATIËNTENMENU ==================== -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl w-80 text-center shadow-2xl flex flex-col gap-4">
+      <h3 class="text-sky-400 font-bold text-base">👤 Patiënt Inloggen</h3>
+      
+      <div id="loggedInUserBox" class="hidden flex flex-col gap-3">
+        <div class="text-xs text-slate-400">Huidige patiënt:</div>
+        <div id="activeModalPatientName" class="text-lg font-extrabold text-emerald-400">Jan de Vries</div>
+        <button id="logoutPatientBtn" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition cursor-pointer text-xs">Uitloggen</button>
+      </div>
+
+      <div id="loginFormBox" class="flex flex-col gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 text-left">Kies Patiënt</label>
+          <select id="loginPatientSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs font-bold text-sky-300 outline-none cursor-pointer">
+            <option value="">-- Selecteer patiënt --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1 text-left">Persoonlijke PIN</label>
+          <input type="password" id="modalPatientPin" maxlength="6" placeholder="Voer PIN in" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm font-bold text-center tracking-widest outline-none">
+        </div>
+        <button id="modalLoginSubmit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-extrabold py-3 rounded-xl transition cursor-pointer text-xs shadow-lg">Inloggen</button>
+      </div>
+
+      <button id="closeLoginModal" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-xl font-bold transition cursor-pointer text-xs mt-1">Sluiten</button>
+    </div>
+  </div>
 
   <!-- ==================== POPUP: INGESTELDE UF ==================== -->
   <div id="ufPopup" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50">
@@ -523,28 +550,19 @@
       if (document.visibilityState === 'visible') await requestWakeLock();
     });
 
-    // --- FULLSCREEN & REFRESH LOGICA (Automatisch Fullscreen herstel) ---
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    function triggerFullscreen() {
-      if (!document.documentElement.fullscreenElement && !document.fullscreenElement) {
+    // --- KIOSK MODE & REFRESH ---
+    const kioskBtn = document.getElementById('kioskBtn');
+    kioskBtn.onclick = () => {
+      if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
+        kioskBtn.innerText = "⛶ Normaal";
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        kioskBtn.innerText = "⛶ Kiosk";
       }
-    }
-
-    fullscreenBtn.onclick = () => {
-      if (!document.fullscreenElement) triggerFullscreen();
-      else if (document.exitFullscreen) document.exitFullscreen();
     };
 
-    // Automatisch fullscreen herstellen direct na de eerste interactie na een refresh
-    document.addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        triggerFullscreen();
-      }
-    }, { once: true });
-
     document.getElementById('refreshBtn').onclick = () => {
-      triggerFullscreen();
       location.reload();
     };
 
@@ -563,13 +581,89 @@
     };
     document.getElementById('pinCancel').onclick = () => pinModal.style.display = 'none';
 
-    // --- PATIENTENBEHEER LOGICA ---
+    // --- INLOGMENU & PATIËNTENBEHEER ---
+    const loginModal = document.getElementById('loginModal');
+    const openLoginMenuBtn = document.getElementById('openLoginMenuBtn');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const loginPatientSelect = document.getElementById('loginPatientSelect');
+    const modalPatientPin = document.getElementById('modalPatientPin');
+    const modalLoginSubmit = document.getElementById('modalLoginSubmit');
+    const loggedInUserBox = document.getElementById('loggedInUserBox');
+    const loginFormBox = document.getElementById('loginFormBox');
+    const activeModalPatientName = document.getElementById('activeModalPatientName');
+    const logoutPatientBtn = document.getElementById('logoutPatientBtn');
+    const headerLoginText = document.getElementById('headerLoginText');
+    const activePatientDisplay = document.getElementById('activePatientDisplay');
+
+    let loadedPatientsData = {};
+
+    patientsRef.on('value', (snapshot) => {
+      loginPatientSelect.innerHTML = '<option value="">-- Selecteer patiënt --</option>';
+      loadedPatientsData = snapshot.val() || {};
+      Object.keys(loadedPatientsData).forEach(pin => {
+        const p = loadedPatientsData[pin];
+        const opt = document.createElement('option');
+        opt.value = pin;
+        opt.textContent = p.name;
+        loginPatientSelect.appendChild(opt);
+      });
+    });
+
+    openLoginMenuBtn.onclick = () => {
+      loginModal.style.display = 'flex';
+      modalPatientPin.value = '';
+    };
+
+    closeLoginModal.onclick = () => {
+      loginModal.style.display = 'none';
+    };
+
+    modalLoginSubmit.onclick = () => {
+      const selectedPin = loginPatientSelect.value;
+      const enteredPin = modalPatientPin.value.trim();
+
+      if (!selectedPin) {
+        alert('Selecteer alstublieft een patiënt.');
+        return;
+      }
+
+      const patient = loadedPatientsData[selectedPin];
+      if (patient && patient.pin === enteredPin) {
+        activeModalPatientName.innerText = patient.name;
+        headerLoginText.innerText = patient.name;
+        activePatientDisplay.innerText = patient.name;
+        dryWeightInput.value = patient.dryWeight;
+        berekenUF(true);
+
+        // PIN-code direct wissen uit het invoerveld ter beveiliging
+        modalPatientPin.value = '';
+
+        loggedInUserBox.classList.remove('hidden');
+        loginFormBox.classList.add('hidden');
+        alert(`Welkom ${patient.name}! Drooggewicht ingesteld op ${patient.dryWeight} kg.`);
+        loginModal.style.display = 'none';
+        switchTab('tijd');
+      } else {
+        alert('Onjuiste PIN-code voor deze patiënt!');
+        modalPatientPin.value = '';
+      }
+    };
+
+    logoutPatientBtn.onclick = () => {
+      headerLoginText.innerText = "Inloggen";
+      activePatientDisplay.innerText = "Niet ingelogd";
+      loggedInUserBox.classList.add('hidden');
+      loginFormBox.classList.remove('hidden');
+      loginPatientSelect.value = "";
+      modalPatientPin.value = "";
+      alert('Succesvol uitgelogd.');
+      loginModal.style.display = 'none';
+    };
+
     const newPatientName = document.getElementById('newPatientName');
     const newPatientDry = document.getElementById('newPatientDry');
     const newPatientPin = document.getElementById('newPatientPin');
-    const loginPatientPin = document.getElementById('loginPatientPin');
     const deletePatientPin = document.getElementById('deletePatientPin');
-    const activePatientDisplay = document.getElementById('activePatientDisplay');
 
     document.getElementById('saveNewPatientBtn').onclick = () => {
       const name = newPatientName.value.trim();
@@ -592,36 +686,17 @@
       newPatientPin.value = '';
     };
 
-    document.getElementById('loginPatientBtn').onclick = () => {
-      const pin = loginPatientPin.value.trim();
-      patientsRef.child(pin).once('value', (snapshot) => {
-        const patient = snapshot.val();
-        if (patient) {
-          activePatientDisplay.innerText = patient.name;
-          dryWeightInput.value = patient.dryWeight;
-          berekenUF(true);
-          alert(`Patiënt ${patient.name} succesvol geladen! Drooggewicht ingesteld op ${patient.dryWeight} kg.`);
-          loginPatientPin.value = '';
-          switchTab('tijd');
-        } else {
-          alert('Onjuiste patiënt PIN-code!');
-        }
-      });
-    };
-
     document.getElementById('deletePatientBtn').onclick = () => {
       const pin = deletePatientPin.value.trim();
-      patientsRef.child(pin).once('value', (snapshot) => {
-        if (snapshot.exists()) {
-          if (confirm('Weet je zeker dat je deze patiënt wilt afvoeren?')) {
-            patientsRef.child(pin).remove();
-            alert('Patiënt succesvol afgevoerd.');
-            deletePatientPin.value = '';
-          }
-        } else {
-          alert('Geen patiënt gevonden met deze PIN!');
+      if (loadedPatientsData[pin]) {
+        if (confirm(`Weet je zeker dat je patiënt ${loadedPatientsData[pin].name} wilt afvoeren?`)) {
+          patientsRef.child(pin).remove();
+          alert('Patiënt succesvol afgevoerd.');
+          deletePatientPin.value = '';
         }
-      });
+      } else {
+        alert('Geen patiënt gevonden met deze PIN!');
+      }
     };
 
     // --- GEWICHT & UF BEREKENING (ML) ---
@@ -629,6 +704,7 @@
     const preWeightInput = document.getElementById('preWeight');
     const postWeightInput = document.getElementById('postWeight');
     const ufValueEl = document.getElementById('ufValue');
+    const overviewUF = document.getElementById('overviewUF');
     const ufTrafficLabel = document.getElementById('ufTrafficLabel');
     const setUfInput = document.getElementById('setUfInput');
     const actualUfDisplay = document.getElementById('actualUfDisplay');
@@ -756,7 +832,6 @@
         keys.forEach(key => {
           const item = data[key];
           
-          // Filter op datum indien ingesteld
           if (item.timestamp) {
             if (item.timestamp < startVal || item.timestamp > endVal) return;
           }
@@ -1082,7 +1157,7 @@
     };
 
     window.deleteSession = function(key) {
-      if (confirm('Weet je zeker dat je deze meting wilt verwijderen?')) {
+      if (confirm('Wil je deze meting verwijderen?')) {
         historyRef.child(key).remove();
       }
     };
