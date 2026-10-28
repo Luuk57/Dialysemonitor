@@ -23,6 +23,13 @@
     .tab-pane { display: none; }
     .tab-pane.active { display: flex; }
     .led-dot { transition: background-color 0.4s ease, box-shadow 0.4s ease; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea { position: absolute; left: 0; top: 0; width: 100%; color: black !important; background: white !important; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen w-screen flex flex-col overflow-hidden relative">
@@ -44,8 +51,8 @@
         <span class="text-xs text-slate-400">⏱️ Restant:</span>
         <span id="topCountdown" class="font-extrabold text-sky-400 text-sm tracking-wider">04:00:00</span>
       </div>
-      <!-- Refresh Knop -->
-      <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-xl text-xs font-semibold transition cursor-pointer border border-slate-700" title="Pagina Vernieuwen">🔄</button>
+      <!-- Refresh Knop met automatische Fullscreen herstart -->
+      <button id="refreshBtn" class="bg-slate-800 hover:bg-slate-700 text-sky-400 px-2.5 py-1 rounded-xl text-xs font-semibold transition cursor-pointer border border-slate-700" title="Pagina Vernieuwen">🔄</button>
     </div>
     
     <div class="flex items-center gap-3 text-sm">
@@ -141,7 +148,6 @@
         </div>
       </div>
 
-      <!-- Bloeddruk & Hartslag Lijngrafiek -->
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
         <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">❤️ Lijngrafiek Bloeddruk & Hartslag</h2>
         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 h-56 relative flex items-center justify-center">
@@ -334,19 +340,46 @@
       </div>
     </div>
 
-    <!-- TAB 6: OVERZICHT -->
-    <div id="tab-overzicht" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm text-center">
-        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">📊 Sessie Overzicht</h2>
-        <div class="grid grid-cols-2 gap-3 mt-2">
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+    <!-- TAB 6: OVERZICHT (Met Uitgebreide Tabel & PDF Print Knop) -->
+    <div id="tab-overzicht" class="tab-pane flex-col gap-4 w-full max-w-4xl mx-auto pb-6">
+      <div id="printArea" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4 w-full">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-sky-400 font-bold text-lg">📊 Volledig Dialyse Overzicht</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Alle opgeslagen behandelingen op een rij</p>
+          </div>
+          <button onclick="window.print()" class="no-print bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow">
+            🖨️ Print Overzicht / PDF
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-2 no-print">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
             <div class="text-xs text-slate-400">Restant Tijd</div>
             <div id="overviewTime" class="text-xl font-bold text-sky-400">04:00:00</div>
           </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
             <div class="text-xs text-slate-400">Laatste UF Advies</div>
             <div id="overviewUF" class="text-xl font-bold text-emerald-400">3800 ml</div>
           </div>
+        </div>
+
+        <!-- Uitgebreide Overzichtstabel -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2.5 px-2">Datum & Tijd</th>
+                <th class="py-2.5 px-2">Droog</th>
+                <th class="py-2.5 px-2">Pre (Vóór)</th>
+                <th class="py-2.5 px-2">Na (Post)</th>
+                <th class="py-2.5 px-2">Berekend UF</th>
+                <th class="py-2.5 px-2">Ingesteld UF</th>
+                <th class="py-2.5 px-2">Werkelijk UF</th>
+              </tr>
+            </thead>
+            <tbody id="fullOverviewTableBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -386,7 +419,7 @@
   </div>
 
   <!-- ==================== VASTE ONDERBALK MET 6 TEGELS ==================== -->
-  <nav class="bg-slate-900 border-t border-slate-800 p-2 grid grid-cols-6 gap-2 shrink-0 z-20">
+  <nav class="no-print bg-slate-900 border-t border-slate-800 p-2 grid grid-cols-6 gap-2 shrink-0 z-20">
     <button onclick="switchTab('gewicht')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="gewicht">
       <span class="text-lg">⚖️</span>
       <span class="text-[10px] font-bold mt-0.5">Gewicht</span>
@@ -490,10 +523,22 @@
       if (document.visibilityState === 'visible') await requestWakeLock();
     });
 
-    // --- FULLSCREEN & DIMMER ---
-    document.getElementById('fullscreenBtn').onclick = () => {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    // --- FULLSCREEN & REFRESH (Direct automatisch terug naar Fullscreen) ---
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    function triggerFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    }
+
+    fullscreenBtn.onclick = () => {
+      if (!document.fullscreenElement) triggerFullscreen();
       else if (document.exitFullscreen) document.exitFullscreen();
+    };
+
+    document.getElementById('refreshBtn').onclick = () => {
+      triggerFullscreen();
+      location.reload();
     };
 
     const dimmer = document.getElementById('dimmer');
@@ -672,8 +717,9 @@
       }
     };
 
-    // --- SVG LIJNGRAFIEK VOOR BLOEDDRUK & HARTSLAG ---
+    // --- SVG LIJNGRAFIEK & OVERZICHT TABEL ---
     const bpmHistoryTableBody = document.getElementById('bpmHistoryTableBody');
+    const fullOverviewTableBody = document.getElementById('fullOverviewTableBody');
     const bpmLineChart = document.getElementById('bpmLineChart');
 
     bpmHistoryRef.on('value', (snapshot) => {
@@ -687,7 +733,6 @@
           records.push({ key, ...data[key] });
         });
 
-        // Oudste eerst voor de lijngrafiek, maar tabel toont nieuwste bovenaan
         const tableRecords = [...records].reverse();
         tableRecords.forEach(item => {
           const row = document.createElement('tr');
@@ -722,7 +767,7 @@
 
       if (records.length === 0) return;
 
-      const maxVal = 220; // Schaal tot 220 mmHg
+      const maxVal = 220;
       const minVal = 30;
 
       function getX(index) {
@@ -734,7 +779,6 @@
         return height - padding - ((val - minVal) / (maxVal - minVal)) * (height - 2 * padding);
       }
 
-      // Roosterlijnen
       [50, 100, 150, 200].forEach(v => {
         const y = getY(v);
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -771,31 +815,29 @@
         hrPoints += `${x},${getY(hr)} `;
       });
 
-      // Lijnen tekenen
       if (records.length > 1) {
         const sysPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
         sysPolyline.setAttribute('points', sysPoints.trim());
         sysPolyline.setAttribute('fill', 'none');
-        sysPolyline.setAttribute('stroke', '#f43f5e'); // Rose
+        sysPolyline.setAttribute('stroke', '#f43f5e');
         sysPolyline.setAttribute('stroke-width', '2.5');
         bpmLineChart.appendChild(sysPolyline);
 
         const diaPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
         diaPolyline.setAttribute('points', diaPoints.trim());
         diaPolyline.setAttribute('fill', 'none');
-        diaPolyline.setAttribute('stroke', '#f59e0b'); // Amber
+        diaPolyline.setAttribute('stroke', '#f59e0b');
         diaPolyline.setAttribute('stroke-width', '2.5');
         bpmLineChart.appendChild(diaPolyline);
 
         const hrPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
         hrPolyline.setAttribute('points', hrPoints.trim());
         hrPolyline.setAttribute('fill', 'none');
-        hrPolyline.setAttribute('stroke', '#0ea5e9'); // Sky
+        hrPolyline.setAttribute('stroke', '#0ea5e9');
         hrPolyline.setAttribute('stroke-width', '2.5');
         bpmLineChart.appendChild(hrPolyline);
       }
 
-      // Punten tekenen
       records.forEach((item, index) => {
         const x = getX(index);
         const sys = item.sys || parseInt(item.bp.split('/')[0]) || 120;
@@ -916,7 +958,7 @@
     preWeightInput.oninput = () => berekenUF(true);
     postWeightInput.oninput = () => berekenUF(true);
 
-    // --- OPSLAAN, BEWERKEN & VERWIJDEREN (GEWICHT) ---
+    // --- OPSLAAN, BEWERKEN & VERWIJDEREN (GEWICHT & OVERZICHT TABEL) ---
     const historyTableBody = document.getElementById('historyTableBody');
     const chartContainer = document.getElementById('chartContainer');
     const statHigh = document.getElementById('statHigh');
@@ -969,16 +1011,19 @@
 
     historyRef.on('value', (snapshot) => {
       historyTableBody.innerHTML = '';
+      fullOverviewTableBody.innerHTML = '';
       chartContainer.innerHTML = '';
       const data = snapshot.val();
       let weights = [];
 
       if (data) {
-        Object.keys(data).forEach(key => {
+        const keys = Object.keys(data).reverse(); // Laatste bovenaan
+        keys.forEach(key => {
           const item = data[key];
           if (item.pre) weights.push(parseFloat(item.pre));
           if (item.post) weights.push(parseFloat(item.post));
 
+          // Tab 1 tabelrij
           const row = document.createElement('tr');
           row.className = "border-b border-slate-900 hover:bg-slate-900/50";
           row.innerHTML = `
@@ -994,6 +1039,20 @@
             </td>
           `;
           historyTableBody.appendChild(row);
+
+          // Overzicht tabblad tabelrij (voor PDF / Print)
+          const fullRow = document.createElement('tr');
+          fullRow.className = "border-b border-slate-900";
+          fullRow.innerHTML = `
+            <td class="py-2 px-2 text-slate-300">${item.date}</td>
+            <td class="py-2 px-2 font-bold text-sky-400">${item.dry || '-'} kg</td>
+            <td class="py-2 px-2 font-bold text-sky-300">${item.pre} kg</td>
+            <td class="py-2 px-2 font-bold text-emerald-400">${item.post} kg</td>
+            <td class="py-2 px-2 text-slate-300">${item.calculatedUf}</td>
+            <td class="py-2 px-2 text-sky-300">${item.setUf || '-'}</td>
+            <td class="py-2 px-2 font-bold text-amber-400">${item.actualUf || '-'}</td>
+          `;
+          fullOverviewTableBody.appendChild(fullRow);
 
           const barGroup = document.createElement('div');
           barGroup.className = "flex flex-col items-center h-full justify-end gap-1 flex-1";
