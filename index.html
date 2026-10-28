@@ -20,7 +20,6 @@
   <style>
     body { overscroll-behavior: none; user-select: none; }
     #dimmer { position: fixed; inset: 0; background: black; pointer-events: none; opacity: 0; z-index: 9999; transition: opacity 0.3s; }
-    /* Zorg dat actieve tabbladen goed zichtbaar zijn */
     .tab-pane { display: none; }
     .tab-pane.active { display: flex; }
   </style>
@@ -45,48 +44,90 @@
     </div>
     
     <div class="flex items-center gap-3 text-sm">
-      <!-- Helderheid Slider -->
       <div class="hidden md:flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-xl border border-slate-700 text-xs">
         <span>🌙 Dim:</span>
         <input type="range" id="brightnessRange" min="0" max="80" value="0" class="w-16 accent-sky-400 cursor-pointer">
       </div>
-
       <button id="fullscreenBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer">⛶ Full</button>
       <button id="lockBtn" class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer">🔒 Slot</button>
     </div>
   </header>
 
   <!-- ==================== MAIN PAGINA INHOUD (TABBLADEN) ==================== -->
-  <main class="flex-1 p-4 overflow-y-auto relative flex flex-col justify-center items-center">
+  <main class="flex-1 p-4 overflow-y-auto relative flex flex-col items-center">
     
-    <!-- TAB 1: GEWICHT -->
-    <div id="tab-gewicht" class="tab-pane active flex-col gap-4 w-full max-w-xl mx-auto">
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
-        <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">⚖️ Gewicht & Invoer</h2>
-        <div class="grid grid-cols-2 gap-4">
+    <!-- TAB 1: GEWICHT & HISTORIE -->
+    <div id="tab-gewicht" class="tab-pane active flex-col gap-4 w-full max-w-2xl mx-auto pb-6">
+      
+      <!-- Instelling & Invoer Kaart -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
+        <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">⚖️ Gewicht & Automatische UF Berekening</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Pre-gewicht (kg)</label>
-            <input type="number" step="0.1" id="preWeight" value="112.5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xl font-bold text-center focus:ring-2 focus:ring-sky-500 outline-none">
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Vaste Drooggewicht (kg)</label>
+            <input type="number" step="0.1" id="dryWeight" value="109.0" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-base font-bold text-center outline-none focus:ring-2 focus:ring-sky-500">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Drooggewicht (kg)</label>
-            <input type="number" step="0.1" id="dryWeight" value="109.0" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xl font-bold text-center focus:ring-2 focus:ring-sky-500 outline-none">
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Pre-gewicht (Vóór) (kg)</label>
+            <input type="number" step="0.1" id="preWeight" value="112.5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-base font-bold text-center outline-none focus:ring-2 focus:ring-sky-500">
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Post-gewicht (Na) (kg)</label>
+            <input type="number" step="0.1" id="postWeight" value="109.2" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-base font-bold text-center outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <div>
+            <div class="text-xs font-bold uppercase text-slate-400">Automatisch UF Advies (Onveranderbaar)</div>
+            <div id="ufTrafficLabel" class="text-xs text-emerald-400 font-semibold">Normaal / Goed (< 4.0 kg) 🟢</div>
+          </div>
+          <div id="ufValue" class="text-2xl font-extrabold text-emerald-400">3.8 kg</div>
+        </div>
+
+        <button id="saveSessionBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition cursor-pointer text-sm">💾 Huidige Sessie Opslaan naar Overzicht</button>
+      </div>
+
+      <!-- Overzicht & Tabel van Metingen -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
+        <h3 class="text-sky-400 font-bold text-sm border-b border-slate-800 pb-2">📋 Overzicht Eerdere Dialyses</h3>
+        <div class="overflow-x-auto max-h-48">
+          <table class="w-full text-left text-xs">
+            <thead class="text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2 px-2">Datum</th>
+                <th class="py-2 px-2">Pre (kg)</th>
+                <th class="py-2 px-2">Na (kg)</th>
+                <th class="py-2 px-2">UF (kg)</th>
+                <th class="py-2 px-2 text-right">Acties</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Dynamisch gevuld -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: UF ADVIES -->
-    <div id="tab-uf" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
-      <div id="ufResultCard" class="p-6 rounded-2xl border transition-all text-center bg-emerald-500/10 border-emerald-500/30 shadow-lg">
-        <div class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Berekend UF Advies (Pre - Droog + 0.3)</div>
-        <div id="ufValue" class="text-5xl font-extrabold text-emerald-400 mb-3">3.8 kg</div>
-        <div id="ufTrafficLabel" class="text-base font-bold text-emerald-300">Normaal / Goed (&lt; 4.0 kg) 🟢</div>
+    <!-- TAB 2: UF ADVIES & GRAFIEK -->
+    <div id="tab-uf" class="tab-pane flex-col gap-4 w-full max-w-2xl mx-auto pb-6">
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
+        <h2 class="text-sky-400 font-bold text-base border-b border-slate-800 pb-2">📈 Grafiek Gewichtsverloop (Voor & Na)</h2>
+        <!-- Simpele visuele weergave / grafiek container -->
+        <div id="chartContainer" class="bg-slate-950 p-4 rounded-xl border border-slate-800 h-64 flex items-end gap-2 justify-around">
+          <!-- Wordt dynamisch gevuld met balkjes per meting -->
+        </div>
+        <div class="flex justify-center gap-4 text-xs text-slate-400">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-sky-500 rounded"></span> Pre-gewicht</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-500 rounded"></span> Na-gewicht</span>
+        </div>
       </div>
     </div>
 
     <!-- TAB 3: TIJD & COUNTDOWN -->
-    <div id="tab-tijd" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
+    <div id="tab-tijd" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center shadow-lg">
         <h2 class="text-sky-400 font-bold text-lg mb-4">⏱️ Live Dialyse Countdown</h2>
         <div id="countdownTimer" class="text-6xl font-extrabold text-sky-400 tracking-widest my-4">08:00:00</div>
@@ -99,7 +140,7 @@
     </div>
 
     <!-- TAB 4: BPM / HARTLAG & BLOEDDRUK -->
-    <div id="tab-bpm" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
+    <div id="tab-bpm" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-4">
         <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">❤️ Bloeddruk & Hartslag (BPM)</h2>
         <div class="grid grid-cols-2 gap-4">
@@ -116,7 +157,7 @@
     </div>
 
     <!-- TAB 5: PATIENT -->
-    <div id="tab-patient" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
+    <div id="tab-patient" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm">
         <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">👤 Patiënt Informatie</h2>
         <div class="flex justify-between py-1 border-b border-slate-800/50"><span>Naam:</span> <span class="font-bold">Thuisdialyse Patiënt</span></div>
@@ -126,7 +167,7 @@
     </div>
 
     <!-- TAB 6: OVERZICHT -->
-    <div id="tab-overzicht" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto">
+    <div id="tab-overzicht" class="tab-pane flex-col gap-4 w-full max-w-xl mx-auto justify-center h-full">
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg flex flex-col gap-3 text-sm text-center">
         <h2 class="text-sky-400 font-bold text-lg border-b border-slate-800 pb-2">📊 Sessie Overzicht</h2>
         <div class="grid grid-cols-2 gap-3 mt-2">
@@ -135,7 +176,7 @@
             <div id="overviewTime" class="text-xl font-bold text-sky-400">08:00:00</div>
           </div>
           <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <div class="text-xs text-slate-400">UF Advies</div>
+            <div class="text-xs text-slate-400">Laatste UF Advies</div>
             <div id="overviewUF" class="text-xl font-bold text-emerald-400">3.8 kg</div>
           </div>
         </div>
@@ -151,8 +192,8 @@
       <span class="text-[10px] font-bold mt-0.5">Gewicht</span>
     </button>
     <button onclick="switchTab('uf')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="uf">
-      <span class="text-lg">💧</span>
-      <span class="text-[10px] font-bold mt-0.5">UF</span>
+      <span class="text-lg">📈</span>
+      <span class="text-[10px] font-bold mt-0.5">UF & Grafiek</span>
     </button>
     <button onclick="switchTab('tijd')" class="nav-btn flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition data-[active=true]:bg-sky-600 data-[active=true]:border-sky-500 cursor-pointer" data-tab="tijd">
       <span class="text-lg">⏱️</span>
@@ -214,6 +255,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const sessionRef = db.ref('dialyse_actieve_sessie');
+    const historyRef = db.ref('dialyse_historie');
 
     // --- WAKE LOCK API ---
     async function requestWakeLock() {
@@ -247,49 +289,125 @@
     };
     document.getElementById('pinCancel').onclick = () => pinModal.style.display = 'none';
 
-    // --- GEWICHT & UF BEREKENING ---
-    const preWeightInput = document.getElementById('preWeight');
+    // --- GEWICHT & AUTOMATISCHE UF BEREKENING ---
     const dryWeightInput = document.getElementById('dryWeight');
+    const preWeightInput = document.getElementById('preWeight');
+    const postWeightInput = document.getElementById('postWeight');
     const ufValueEl = document.getElementById('ufValue');
     const overviewUF = document.getElementById('overviewUF');
     const ufTrafficLabel = document.getElementById('ufTrafficLabel');
-    const ufResultCard = document.getElementById('ufResultCard');
 
     function berekenUF(syncToFirebase = true) {
-      const pre = parseFloat(preWeightInput.value) || 0;
       const dry = parseFloat(dryWeightInput.value) || 109.0;
+      const pre = parseFloat(preWeightInput.value) || 0;
       
+      // Formule: pre-gewicht - drooggewicht + 0.3
       const uf = (pre - dry + 0.3).toFixed(1);
       const ufNum = parseFloat(uf);
 
       ufValueEl.innerText = uf + ' kg';
       overviewUF.innerText = uf + ' kg';
 
-      ufResultCard.className = "p-6 rounded-2xl border transition-all text-center shadow-lg ";
       if (ufNum >= 4.5) {
-        ufResultCard.classList.add('bg-rose-500/10', 'border-rose-500/30');
-        ufValueEl.className = "text-5xl font-extrabold text-rose-400 mb-3";
-        ufTrafficLabel.className = "text-base font-bold text-rose-300";
+        ufTrafficLabel.className = "text-xs text-rose-400 font-semibold";
         ufTrafficLabel.innerText = "Let op: Zeer hoog UF advies (>= 4.5 kg) 🔴";
       } else if (ufNum >= 4.0) {
-        ufResultCard.classList.add('bg-amber-500/10', 'border-amber-500/30');
-        ufValueEl.className = "text-5xl font-extrabold text-amber-400 mb-3";
-        ufTrafficLabel.className = "text-base font-bold text-amber-300";
+        ufTrafficLabel.className = "text-xs text-amber-400 font-semibold";
         ufTrafficLabel.innerText = "Waarschuwing: Verhoogd UF advies (>= 4.0 kg) 🟠";
       } else {
-        ufResultCard.classList.add('bg-emerald-500/10', 'border-emerald-500/30');
-        ufValueEl.className = "text-5xl font-extrabold text-emerald-400 mb-3";
-        ufTrafficLabel.className = "text-base font-bold text-emerald-300";
+        ufTrafficLabel.className = "text-xs text-emerald-400 font-semibold";
         ufTrafficLabel.innerText = "Normaal / Goed (< 4.0 kg) 🟢";
       }
 
       if (syncToFirebase) {
-        sessionRef.update({ preWeight: pre, dryWeight: dry, uf: uf });
+        sessionRef.update({
+          dryWeight: dry,
+          preWeight: pre,
+          postWeight: parseFloat(postWeightInput.value) || 0,
+          uf: uf
+        });
       }
     }
 
-    preWeightInput.oninput = () => berekenUF(true);
     dryWeightInput.oninput = () => berekenUF(true);
+    preWeightInput.oninput = () => berekenUF(true);
+    postWeightInput.oninput = () => berekenUF(true);
+
+    // --- OPSLAAN, BEWERKEN & VERWIJDEREN VAN SESSIES ---
+    const historyTableBody = document.getElementById('historyTableBody');
+    const chartContainer = document.getElementById('chartContainer');
+
+    document.getElementById('saveSessionBtn').onclick = () => {
+      const newSession = {
+        date: new Date().toLocaleDateString('nl-NL') + ' ' + new Date().toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'}),
+        dry: dryWeightInput.value,
+        pre: preWeightInput.value,
+        post: postWeightInput.value,
+        uf: ufValueEl.innerText.replace(' kg', '')
+      };
+      historyRef.push(newSession);
+      alert('Sessie opgeslagen in het overzicht!');
+    };
+
+    window.deleteSession = function(key) {
+      if (confirm('Weet je zeker dat je deze meting wilt verwijderen?')) {
+        historyRef.child(key).remove();
+      }
+    };
+
+    window.editSession = function(key, pre, post) {
+      const newPre = prompt('Pas pre-gewicht aan:', pre);
+      const newPost = prompt('Pas post-gewicht aan:', post);
+      if (newPre !== null && newPost !== null) {
+        const dry = parseFloat(dryWeightInput.value) || 109.0;
+        const newUf = (parseFloat(newPre) - dry + 0.3).toFixed(1);
+        historyRef.child(key).update({ pre: newPre, post: newPost, uf: newUf });
+      }
+    };
+
+    // Luister naar Historie en bouw Tabel + Grafiek
+    historyRef.on('value', (snapshot) => {
+      historyTableBody.innerHTML = '';
+      chartContainer.innerHTML = '';
+      const data = snapshot.val();
+      if (data) {
+        Object.keys(data).forEach(key => {
+          const item = data[key];
+          
+          // Tabel vullen
+          const row = document.createElement('tr');
+          row.className = "border-b border-slate-900 hover:bg-slate-900/50";
+          row.innerHTML = `
+            <td class="py-2 px-2 text-slate-300">${item.date}</td>
+            <td class="py-2 px-2 font-bold text-sky-400">${item.pre}</td>
+            <td class="py-2 px-2 font-bold text-emerald-400">${item.post}</td>
+            <td class="py-2 px-2 font-bold text-amber-400">${item.uf}</td>
+            <td class="py-2 px-2 text-right space-x-1">
+              <button onclick="editSession('${key}', '${item.pre}', '${item.post}')" class="text-sky-400 hover:underline">Bewerk</button>
+              <button onclick="deleteSession('${key}')" class="text-rose-400 hover:underline">Verwijder</button>
+            </td>
+          `;
+          historyTableBody.appendChild(row);
+
+          // Grafiek balkjes vullen
+          const barGroup = document.createElement('div');
+          barGroup.className = "flex flex-col items-center h-full justify-end gap-1 flex-1";
+          
+          const maxW = 130; // Schaal voor grafiek hoogte
+          const preH = Math.min(Math.max((item.pre / maxW) * 100, 10), 100);
+          const postH = Math.min(Math.max((item.post / maxW) * 100, 10), 100);
+
+          barGroup.innerHTML = `
+            <div class="flex items-end gap-1 h-48 w-full justify-center">
+              <div style="height: ${preH}%" class="w-3 bg-sky-500 rounded-t" title="Pre: ${item.pre}kg"></div>
+              <div style="height: ${postH}%" class="w-3 bg-emerald-500 rounded-t" title="Na: ${item.post}kg"></div>
+            </div>
+            <span class="text-[9px] text-slate-500 truncate w-full text-center">${item.date.split(' ')[0]}</span>
+          `;
+          chartContainer.appendChild(barGroup);
+        });
+      }
+    });
 
     // --- COUNTDOWN TIMER ---
     let timeLeft = 8 * 3600;
@@ -337,17 +455,12 @@
     sessionRef.on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        if (data.preWeight && data.preWeight != preWeightInput.value) {
-          preWeightInput.value = data.preWeight;
-          berekenUF(false);
-        }
-        if (data.dryWeight && data.dryWeight != dryWeightInput.value) {
-          dryWeightInput.value = data.dryWeight;
-          berekenUF(false);
-        }
-        if (typeof data.isRunning === 'boolean') {
-          isRunning = data.isRunning;
-        }
+        if (data.dryWeight && data.dryWeight != dryWeightInput.value) { dryWeightInput.value = data.dryWeight; }
+        if (data.preWeight && data.preWeight != preWeightInput.value) { preWeightInput.value = data.preWeight; }
+        if (data.postWeight && data.postWeight != postWeightInput.value) { postWeightInput.value = data.postWeight; }
+        berekenUF(false);
+
+        if (typeof data.isRunning === 'boolean') { isRunning = data.isRunning; }
         if (typeof data.timeLeft === 'number' && Math.abs(data.timeLeft - timeLeft) > 2) {
           timeLeft = data.timeLeft;
           updateTimerDisplay();
